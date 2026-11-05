@@ -1,0 +1,6 @@
+{
+  "name": "CompanyIntel & Hiring Velocity",
+  "description": "Analyse company websites, simple explanations of what companies do, products, client profiles, creation date, employee headcount, and monetization model.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
