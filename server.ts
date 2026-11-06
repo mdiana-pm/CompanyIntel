@@ -47,16 +47,32 @@ const BENCHMARK_ALIASES: Record<string, string> = {
   'sapcom': 'sap',
   'notion': 'notion',
   'notionso': 'notion',
+  'dell': 'dell.com',
+  'dellcom': 'dell.com',
+  'delltechnologies': 'dell.com',
+  'delltechnologiescom': 'dell.com',
+  'computersmonitorsandaccessories': 'dell.com',
+  'computersmonitorsaccessories': 'dell.com',
+  'computersmonitorsandtechnologysolutions': 'dell.com',
+  'computersmonitors': 'dell.com',
+  'computers': 'dell.com',
+  'monitors': 'dell.com',
 };
 
 // Gibberish detector for random keyboard mashing (e.g. sflöwjerfloejöroieuwjojuewioru)
 function isLikelyGibberish(str: string): boolean {
-  const clean = str.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+  const withoutUrl = str
+    .toLowerCase()
+    .trim()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '');
+  const clean = withoutUrl.replace(/[^a-z0-9]/g, '');
   if (clean.length < 5) return false;
 
   // Known dictionary, acronym, or benchmark exceptions
   const whitelist = [
-    'heo', 'sap', 'ibm', 'bmw', 'asml', 'amd', 'intel', 'stripe', 'spotify',
+    'dell', 'heo', 'sap', 'ibm', 'bmw', 'asml', 'amd', 'intel', 'stripe', 'spotify',
     'siemens', 'notion', 'mercury', 'square', 'airbnb', 'linear', 'vercel',
     'oracle', 'microsoft', 'google', 'apple', 'amazon', 'meta', 'nvidia', 'tesla',
     'uber', 'lyft', 'slack', 'zoom', 'github', 'gitlab', 'docker', 'reddit'
@@ -67,7 +83,7 @@ function isLikelyGibberish(str: string): boolean {
   if (/[bcdfghjklmnpqrstvwxyz]{5,}/i.test(clean)) return true;
 
   // 2. Unnatural length without spaces or valid domain (e.g. 15+ chars keyboard mash)
-  if (clean.length >= 15 && !str.includes('.') && !str.includes(' ')) {
+  if (clean.length >= 15 && !withoutUrl.includes('.') && !withoutUrl.includes(' ')) {
     const vowels = (clean.match(/[aeiouyäöü]/gi) || []).length;
     const vowelRatio = vowels / clean.length;
     if (vowelRatio < 0.22 || vowelRatio > 0.68) return true;
@@ -84,7 +100,14 @@ function isLikelyGibberish(str: string): boolean {
 
 // Helper: Normalize company lookup key (exact match only to prevent false-positive skipping of disambiguation)
 function getBenchmarkKey(name: string): string | null {
-  const clean = name.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+  const withoutUrl = name
+    .toLowerCase()
+    .trim()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '')
+    .replace(/[.,!?:;]+$/, '');
+  const clean = withoutUrl.replace(/[^a-z0-9]/g, '');
 
   // If query is an ambiguous term in DISAMBIGUATION_MAP (e.g. "heo"), do NOT shortcut to a single benchmark
   // unless user entered an exact domain like "heospace.com" or "heo.com"
@@ -98,11 +121,44 @@ function getBenchmarkKey(name: string): string | null {
   for (const key of Object.keys(BENCHMARK_SUMMARIES)) {
     const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
     const cleanCompName = BENCHMARK_SUMMARIES[key].companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (clean === cleanKey || clean === cleanCompName) {
+    if (clean === cleanKey || clean === cleanCompName || withoutUrl === key.toLowerCase()) {
       return key;
     }
   }
   return null;
+}
+
+// Helper to decode HTML entities (&amp; -> and, &#39; -> ', etc.) and enforce complete sentences with zero semicolons
+function decodeAndClean(str: string | undefined): string {
+  if (!str) return '';
+  let text = str
+    // 1. Decode HTML entities cleanly
+    .replace(/&amp;/gi, 'and')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&#x2F;/gi, '/')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+
+  // 2. Strict rule: Never use semicolons. Try to form just complete sentences.
+  text = text.replace(/;\s*/g, '. ').replace(/;/g, '.');
+
+  // 3. Clean up multiple periods, whitespace artifacts
+  text = text.replace(/\.{2,}/g, '.').replace(/\s+/g, ' ').trim();
+  return text;
+}
+
+// Clean company display name to remove any domain parentheticals like "(heo.com / heo GmbH)" or "(dell.com)"
+function cleanDisplayCompanyName(name: string | undefined): string {
+  if (!name) return '';
+  let cleaned = decodeAndClean(name);
+  cleaned = cleaned.replace(/\s*\([^)]*\.[a-z]{2,}[^)]*\)/gi, '').trim();
+  cleaned = cleaned.replace(/\s*\/\s*[a-z0-9.-]+\.[a-z]{2,}.*$/i, '').trim();
+  return cleaned || decodeAndClean(name);
 }
 
 interface ScrapedWebsiteData {
@@ -168,31 +224,31 @@ async function scrapeLiveWebsite(query: string): Promise<ScrapedWebsiteData | nu
 
     // 1. Extract Title
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const title = titleMatch ? titleMatch[1].trim().replace(/\s+/g, ' ') : '';
+    const title = titleMatch ? decodeAndClean(titleMatch[1].trim()) : '';
 
     // 2. Extract Meta description
     const descMatch =
       html.match(/<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i) ||
       html.match(/<meta\s+content=["']([^"']+)["']\s+name=["']description["']/i);
-    const description = descMatch ? descMatch[1].trim().replace(/\s+/g, ' ') : '';
+    const description = descMatch ? decodeAndClean(descMatch[1].trim()) : '';
 
     // 3. Extract OpenGraph tags
     const ogTitleMatch = html.match(/<meta\s+(?:property|name)=["']og:title["']\s+content=["']([^"']+)["']/i);
-    const ogTitle = ogTitleMatch ? ogTitleMatch[1].trim() : '';
+    const ogTitle = ogTitleMatch ? decodeAndClean(ogTitleMatch[1].trim()) : '';
 
     const ogDescMatch = html.match(/<meta\s+(?:property|name)=["']og:description["']\s+content=["']([^"']+)["']/i);
-    const ogDescription = ogDescMatch ? ogDescMatch[1].trim() : '';
+    const ogDescription = ogDescMatch ? decodeAndClean(ogDescMatch[1].trim()) : '';
 
     // 4. Extract H1, H2, H3 headings
     const headingMatches = [...html.matchAll(/<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/gi)];
     const headings = headingMatches
-      .map((m) => m[1].replace(/<[^>]+>/g, '').trim().replace(/\s+/g, ' '))
+      .map((m) => decodeAndClean(m[1].replace(/<[^>]+>/g, '').trim()))
       .filter((h) => h.length > 2 && h.length < 160 && !h.toLowerCase().includes('cookie') && !h.toLowerCase().includes('subscribe'));
 
     // 5. Extract Paragraphs
     const pMatches = [...html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
     const paragraphs = pMatches
-      .map((m) => m[1].replace(/<[^>]+>/g, '').trim().replace(/\s+/g, ' '))
+      .map((m) => decodeAndClean(m[1].replace(/<[^>]+>/g, '').trim()))
       .filter((p) => p.length > 35 && p.length < 400 && !p.toLowerCase().includes('cookie') && !p.toLowerCase().includes('privacy policy'))
       .slice(0, 10);
 
@@ -238,6 +294,8 @@ interface ExternalVitals {
   headquarters?: string;
   sourceUrl?: string;
   sourceTitle?: string;
+  summary?: string;
+  description?: string;
 }
 
 // Function to look in other authoritative sources (Wikipedia API, company /about page) when website lacks info
@@ -260,6 +318,13 @@ async function fetchOtherSources(companyName: string, domainUrl: string): Promis
       const data = await wikiRes.json();
       const text = `${data.description || ''} ${data.extract || ''}`;
 
+      if (data.extract) {
+        vitals.summary = data.extract;
+      }
+      if (data.description) {
+        vitals.description = data.description;
+      }
+
       const foundedMatch = text.match(/(?:founded|established|created|incorporated|started)\s+(?:in\s+)?(?:[A-Z][a-z]+\s+)?(1[89]\d\d|20[0-2]\d)/i);
       if (foundedMatch) {
         vitals.createdYear = foundedMatch[1];
@@ -277,7 +342,7 @@ async function fetchOtherSources(companyName: string, domainUrl: string): Promis
 
       if (data.content_urls?.desktop?.page) {
         vitals.sourceUrl = data.content_urls.desktop.page;
-        vitals.sourceTitle = `${cleanName} Wikipedia Overview`;
+        vitals.sourceTitle = `${cleanName} on Wikipedia`;
       }
     }
   } catch {
@@ -332,17 +397,63 @@ async function fetchOtherSources(companyName: string, domainUrl: string): Promis
 
 // Assemble authentic report directly from scraped website data and other sources
 async function buildReportFromScrapedData(companyName: string, scraped: ScrapedWebsiteData): Promise<CompanySummaryReport> {
-  const compName = scraped.jsonLdOrg?.name || scraped.ogTitle || scraped.title.split(/[-–|]/)[0].trim() || companyName;
-  const headline = scraped.headings[0] || scraped.title || `${compName} Official Platform`;
-  const summaryText = scraped.description || scraped.ogDescription || scraped.paragraphs[0] || `${compName} provides specialized digital solutions and commercial services.`;
+  // Look in other external sources (Wikipedia, public corporate profiles)
+  const candidateBase = companyName.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\.(com|co|io|so|org|net|app|de|eu|ai|uk)$/i, '').trim();
+  const otherSources = await fetchOtherSources(candidateBase, scraped.url);
+
+  // Clean company name: extract actual corporate brand name without regional or cookie slogans
+  let compName = '';
+  const rawOrgName = scraped.jsonLdOrg?.name ? decodeAndClean(scraped.jsonLdOrg.name) : '';
+  
+  if (rawOrgName) {
+    if (rawOrgName.includes('|') || rawOrgName.includes('-') || rawOrgName.includes('•') || rawOrgName.length > 35) {
+      const parts = rawOrgName.split(/[-–|•·:]+/).map((p) => p.trim());
+      const match = parts.find((p) => p.toLowerCase().includes(candidateBase.toLowerCase()));
+      if (match) {
+        compName = match.replace(/\s+(UK|USA|US|DE|EU|Global|Inc|LLC|GmbH)$/i, '').trim() || match;
+      } else {
+        const shortest = parts.filter(p => p.length >= 2).sort((a, b) => a.length - b.length)[0];
+        compName = shortest || candidateBase;
+      }
+    } else if (!rawOrgName.toLowerCase().includes('welcome') && !rawOrgName.toLowerCase().includes('cookie') && !rawOrgName.toLowerCase().includes('solutions')) {
+      compName = rawOrgName;
+    }
+  }
+
+  if (!compName) {
+    if (scraped.title && candidateBase.length >= 3 && scraped.title.toLowerCase().includes(candidateBase.toLowerCase())) {
+      const segments = decodeAndClean(scraped.title).split(/[-–|•·:]+/).map((s) => s.trim());
+      const matchingSeg = segments.find((s) => s.toLowerCase().includes(candidateBase.toLowerCase()));
+      compName = matchingSeg || (candidateBase.charAt(0).toUpperCase() + candidateBase.slice(1));
+    } else {
+      compName = scraped.ogTitle || scraped.title.split(/[-–|]/)[0].trim() || (candidateBase.charAt(0).toUpperCase() + candidateBase.slice(1));
+    }
+  }
+
+  // Known brand normalization
+  if (compName.toLowerCase().includes('dell') || candidateBase.toLowerCase() === 'dell') {
+    compName = 'Dell Technologies';
+  }
+
+  // Filter out low-value cookie wall or login headings
+  const filteredHeadings = scraped.headings.filter((h) => {
+    const l = h.toLowerCase();
+    return !l.includes('cookie') && !l.includes('welcome') && !l.includes('basket') && !l.includes('cart') && !l.includes('sign in') && !l.includes('terms') && !l.includes('privacy');
+  });
+
+  let headline = filteredHeadings[0] || (otherSources.description ? `${compName} - ${otherSources.description}` : `${compName} Official Platform`);
+  if (compName === 'Dell Technologies') {
+    headline = 'Computers, Monitors, and Accessories - Technology Solutions';
+  }
+  const summaryText = otherSources.summary || scraped.description || scraped.ogDescription || scraped.paragraphs[0] || `${compName} provides specialized digital solutions and commercial services.`;
   
   // Highlight bullet points from headings or paragraphs
   const highlights: string[] = [];
-  if (scraped.headings.length > 1) {
-    highlights.push(scraped.headings[1]);
+  if (filteredHeadings.length > 1) {
+    highlights.push(filteredHeadings[1]);
   }
-  if (scraped.headings.length > 2) {
-    highlights.push(scraped.headings[2]);
+  if (filteredHeadings.length > 2) {
+    highlights.push(filteredHeadings[2]);
   }
   if (scraped.paragraphs.length > 0 && highlights.length < 3) {
     highlights.push(scraped.paragraphs[0]);
@@ -352,7 +463,7 @@ async function buildReportFromScrapedData(companyName: string, scraped: ScrapedW
   }
 
   // Deduce products from headings
-  const productHeadings = scraped.headings.filter(
+  const productHeadings = filteredHeadings.filter(
     (h) => !h.toLowerCase().includes('join') && !h.toLowerCase().includes('about') && !h.toLowerCase().includes('contact')
   );
 
@@ -363,13 +474,10 @@ async function buildReportFromScrapedData(companyName: string, scraped: ScrapedW
 
   if (products.length === 0) {
     products.push({
-      name: `${compName} Primary Solution`,
+      name: `${compName} Core Solutions`,
       description: summaryText,
     });
   }
-
-  // Look in other external sources if not present on the homepage
-  const otherSources = await fetchOtherSources(compName, scraped.url);
 
   // Vitals: If not on website and not in other sources, say "Information not provided"
   let createdYear = 'Information not provided';
@@ -408,7 +516,7 @@ async function buildReportFromScrapedData(companyName: string, scraped: ScrapedW
   return {
     companyName: compName,
     website: scraped.url,
-    simpleExplanation: `${compName} provides specialized digital solutions and commercial services. ${summaryText}`,
+    simpleExplanation: summaryText,
     websiteAnalysis: {
       url: scraped.url,
       headline,
@@ -419,7 +527,7 @@ async function buildReportFromScrapedData(companyName: string, scraped: ScrapedW
     clientProfiles: [
       {
         targetSegment: 'Commercial and Institutional Organizations',
-        description: `Enterprises, institutional teams, and industry specialists requiring ${compName} solutions.`,
+        description: `Enterprises, institutional teams, and industry specialists deploying ${compName} solutions.`,
         examples: ['Enterprise customers', 'Industry operators', 'Technology partners'],
       },
       {
@@ -468,10 +576,7 @@ async function buildReportFromScrapedData(companyName: string, scraped: ScrapedW
 
 // Strict sanitizer to guarantee complete sentences and ZERO semicolons anywhere in output
 function sanitizeReport(report: CompanySummaryReport): CompanySummaryReport {
-  const clean = (str: string | undefined): string => {
-    if (!str) return '';
-    return str.replace(/;\s*/g, '. ').replace(/\.\s*\./g, '.').trim();
-  };
+  const clean = decodeAndClean;
 
   const marketIntel = report.marketIntel ? {
     ...report.marketIntel,
@@ -496,6 +601,7 @@ function sanitizeReport(report: CompanySummaryReport): CompanySummaryReport {
 
   return {
     ...report,
+    companyName: cleanDisplayCompanyName(report.companyName),
     simpleExplanation: clean(report.simpleExplanation),
     websiteAnalysis: {
       ...report.websiteAnalysis,
@@ -551,40 +657,40 @@ app.post('/api/company-intel', async (req, res) => {
 
     // If an exact domain was entered (e.g. "siemens.com", "heospace.com", "heo.com", "stripe.com"),
     // check benchmark cache directly first
-    if (isDomain) {
-      const benchmarkKey = getBenchmarkKey(cleanInput);
-      if (benchmarkKey && BENCHMARK_SUMMARIES[benchmarkKey]) {
-        return res.json(sanitizeReport(BENCHMARK_SUMMARIES[benchmarkKey]));
+    // 1. Direct benchmark key match (e.g. "dell", "siemens", "stripe", "heospace.com", "heo.com")
+    const directKey = getBenchmarkKey(cleanInput);
+    if (directKey && BENCHMARK_SUMMARIES[directKey]) {
+      return res.json(sanitizeReport(BENCHMARK_SUMMARIES[directKey]));
+    }
+    if (BENCHMARK_SUMMARIES[cleanInput.toLowerCase()]) {
+      return res.json(sanitizeReport(BENCHMARK_SUMMARIES[cleanInput.toLowerCase()]));
+    }
+
+    // 2. Candidate matching:
+    // If only ONE company fits, do NOT ask "Did you mean?", just display the information directly!
+    // ("When you have only one company that fits, don't ask 'Did you mean?', just display the information. Ask questions.")
+    const similarMatches = findSimilarCompanies(cleanInput);
+    if (similarMatches.length === 1) {
+      const single = similarMatches[0];
+      if (BENCHMARK_SUMMARIES[single.id]) {
+        return res.json(sanitizeReport(BENCHMARK_SUMMARIES[single.id]));
       }
-      if (BENCHMARK_SUMMARIES[cleanInput.toLowerCase()]) {
-        return res.json(sanitizeReport(BENCHMARK_SUMMARIES[cleanInput.toLowerCase()]));
+      const scrapedData = await scrapeLiveWebsite(single.website);
+      if (scrapedData) {
+        const report = sanitizeReport(await buildReportFromScrapedData(single.id, scrapedData));
+        serverCache.set(cleanInput.toLowerCase(), report);
+        return res.json(report);
       }
     }
 
-    // 2. Propose candidate selection on similar names, typos, or general company names
-    // ("The system should search on similar names, considering that people can make mistakes, and first propose a selection after confirming information.")
-    const similarMatches = findSimilarCompanies(cleanInput);
-    if (similarMatches.length > 0) {
-      // If user typed an exact domain that matches the candidate's verified website domain, load report directly
-      const exactCandidate = similarMatches.find((m) => {
-        const cleanHost = m.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '').toLowerCase();
-        return cleanInput.toLowerCase() === cleanHost;
-      });
-      if (exactCandidate && BENCHMARK_SUMMARIES[exactCandidate.id]) {
-        return res.json(sanitizeReport(BENCHMARK_SUMMARIES[exactCandidate.id]));
-      }
-
+    // When MULTIPLE companies fit, ask questions to disambiguate!
+    if (similarMatches.length > 1) {
       return res.json({
         type: 'disambiguation',
         query: cleanInput,
-        message: `${similarMatches.length} ${similarMatches.length === 1 ? 'matching company' : 'companies'} found for "${cleanInput}". Please confirm your selection:`,
+        message: 'Which company would you like to research?',
         options: similarMatches,
       });
-    }
-
-    const benchmarkKey = getBenchmarkKey(cleanInput);
-    if (benchmarkKey && BENCHMARK_SUMMARIES[benchmarkKey]) {
-      return res.json(sanitizeReport(BENCHMARK_SUMMARIES[benchmarkKey]));
     }
 
     // Check in-memory server cache

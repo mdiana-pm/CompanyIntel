@@ -27,17 +27,13 @@ export const CompanyDisambiguationView: React.FC<CompanyDisambiguationViewProps>
           </div>
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              {isSingleMatch ? 'Similar Name Match' : 'Multiple Entities Detected'}
+              Multiple Entities Detected
             </div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-              {isSingleMatch 
-                ? `Did you mean ${options[0].name.split('(')[0].trim()}?`
-                : message || `${options.length} companies found matching "${query}"`}
+              Which company would you like to research?
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
-              {isSingleMatch
-                ? `The system detected a potential typo or similar name for "${query}". Please confirm the verified company information below to load the full executive report:`
-                : 'Multiple recognized corporate entities operate under this or similar names. Please select and confirm the company you wish to analyze in detail:'}
+              Multiple recognized corporate entities operate under this or similar names. Please select the company you wish to analyze in detail:
             </p>
           </div>
         </div>

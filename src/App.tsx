@@ -18,11 +18,17 @@ import {
 } from 'lucide-react';
 
 function isLikelyGibberish(str: string): boolean {
-  const clean = str.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+  const withoutUrl = str
+    .toLowerCase()
+    .trim()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '');
+  const clean = withoutUrl.replace(/[^a-z0-9]/g, '');
   if (clean.length < 5) return false;
 
   const whitelist = [
-    'heo', 'sap', 'ibm', 'bmw', 'asml', 'amd', 'intel', 'stripe', 'spotify',
+    'dell', 'heo', 'sap', 'ibm', 'bmw', 'asml', 'amd', 'intel', 'stripe', 'spotify',
     'siemens', 'notion', 'mercury', 'square', 'airbnb', 'linear', 'vercel',
     'oracle', 'microsoft', 'google', 'apple', 'amazon', 'meta', 'nvidia', 'tesla',
     'uber', 'lyft', 'slack', 'zoom', 'github', 'gitlab', 'docker', 'reddit'
@@ -31,7 +37,7 @@ function isLikelyGibberish(str: string): boolean {
 
   if (/[bcdfghjklmnpqrstvwxyz]{5,}/i.test(clean)) return true;
 
-  if (clean.length >= 15 && !str.includes('.') && !str.includes(' ')) {
+  if (clean.length >= 15 && !withoutUrl.includes('.') && !withoutUrl.includes(' ')) {
     const vowels = (clean.match(/[aeiouyäöü]/gi) || []).length;
     const vowelRatio = vowels / clean.length;
     if (vowelRatio < 0.22 || vowelRatio > 0.68) return true;
@@ -57,7 +63,7 @@ export default function App() {
     : [];
 
   const handleSearch = async (query: string) => {
-    const trimmed = query.trim().slice(0, 30);
+    const trimmed = query.trim().slice(0, 120);
     if (!trimmed) return;
     setIsLoading(true);
     setCurrentReport(null);
@@ -159,7 +165,7 @@ export default function App() {
                 CompanyIntel
               </span>
               <span className="text-[11px] text-slate-500 block">
-                Website, Products &amp; Monetization Analyzer
+                Website, Products and Monetization Analyzer
               </span>
             </div>
           </div>
@@ -331,7 +337,7 @@ export default function App() {
                   <Package className="w-4 h-4" />
                 </div>
                 <h3 className="font-bold text-slate-900 text-sm">
-                  What It Does, Products &amp; Clients
+                  What It Does, Products and Clients
                 </h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
                   Plain-English explanation of what the business actually does, its core products, and target client profiles.
@@ -343,7 +349,7 @@ export default function App() {
                   <Users className="w-4 h-4" />
                 </div>
                 <h3 className="font-bold text-slate-900 text-sm">
-                  Creation Date &amp; Headcount
+                  Creation Date and Headcount
                 </h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
                   Provides when the company was founded and its latest verified employee headcount number.
@@ -367,7 +373,7 @@ export default function App() {
                   <TrendingUp className="w-4 h-4" />
                 </div>
                 <h3 className="font-bold text-slate-900 text-sm">
-                  Market Share &amp; Main Competitors
+                  Market Share and Main Competitors
                 </h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
                   Highlights documented market share percentage, industry leadership standing, and 3 primary competitors with their key strategic differences.
@@ -388,8 +394,8 @@ export default function App() {
       {/* Clean Footer */}
       <footer className="border-t border-slate-200 bg-white py-4 mt-auto">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-          <span>Company Intelligence: Website, Simple Explanation, Products, Clients, Vitals, Monetization, Market Share &amp; Competitors.</span>
-          <span className="font-mono text-[11px] text-slate-400">Grounded via Google Search &amp; Verified Disclosures</span>
+          <span>Company Intelligence: Website, Simple Explanation, Products, Clients, Vitals, Monetization, Market Share and Competitors.</span>
+          <span className="font-mono text-[11px] text-slate-400">Grounded via Google Search and Verified Disclosures</span>
         </div>
       </footer>
     </div>

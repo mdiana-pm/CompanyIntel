@@ -142,7 +142,7 @@ export const CompanyAnalysisView: React.FC<CompanyAnalysisViewProps> = ({ report
         {/* Main Headline from the site */}
         <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">
-            Primary Website Headline &amp; Positioning
+            Primary Website Headline and Positioning
           </span>
           <p className="text-base font-bold text-slate-900 italic">
             &ldquo;{websiteAnalysis.headline}&rdquo;
@@ -185,7 +185,7 @@ export const CompanyAnalysisView: React.FC<CompanyAnalysisViewProps> = ({ report
                 <Package className="w-4 h-4" />
               </div>
               <h2 className="text-base font-bold text-slate-900 tracking-tight">
-                Products &amp; Offerings
+                Products and Offerings
               </h2>
             </div>
 
@@ -301,7 +301,7 @@ export const CompanyAnalysisView: React.FC<CompanyAnalysisViewProps> = ({ report
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-900 tracking-tight">
-                Market Share &amp; Main Competitors
+                Market Share and Main Competitors
               </h2>
               <p className="text-xs text-slate-500">
                 Documented market standing, industry stature, and key peer alternatives
@@ -396,7 +396,7 @@ export const CompanyAnalysisView: React.FC<CompanyAnalysisViewProps> = ({ report
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  Primary Competitors &amp; Differentiation
+                  Primary Competitors and Differentiation
                 </span>
                 <span className="text-[11px] text-slate-400 font-mono">
                   {marketIntel.competitors.length} Peer Benchmarks
@@ -409,7 +409,7 @@ export const CompanyAnalysisView: React.FC<CompanyAnalysisViewProps> = ({ report
                   <thead>
                     <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
                       <th className="py-3 px-4 w-1/3 sm:w-1/4">Competitor</th>
-                      <th className="py-3 px-4">Key Market Difference &amp; Strategic Focus</th>
+                      <th className="py-3 px-4">Key Market Difference and Strategic Focus</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">

@@ -8,11 +8,41 @@ export interface CompanyCandidateItem {
 
 export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
   {
+    id: 'dell.com',
+    aliases: [
+      'dell',
+      'del',
+      'dell technologies',
+      'dell inc',
+      'dell computers',
+      'dell servers',
+      'alienware',
+      'computers',
+      'monitors',
+      'accessories',
+      'computers monitors and accessories',
+      'computers monitors accessories',
+      'computers monitors and technology solutions',
+      'laptops',
+      'workstations',
+    ],
+    option: {
+      id: 'dell.com',
+      name: 'Dell Technologies',
+      website: 'https://www.dell.com',
+      industry: 'Enterprise IT Infrastructure, AI Servers & Personal Computing',
+      headquarters: 'Round Rock, Texas, USA',
+      foundingYear: '1984',
+      employeeCount: '~97,000 employees',
+      shortDescription: 'Global technology leader providing personal computers, display monitors, computing accessories, AI-optimized servers, and enterprise data storage. It draws revenue from its Client Solutions Group and Infrastructure Solutions Group.',
+    },
+  },
+  {
     id: 'siemens.com',
     aliases: ['siemens', 'siemen', 'simens', 'siemems', 'siemensag', 'siemensenergy', 'siemens ag'],
     option: {
       id: 'siemens.com',
-      name: 'Siemens (Siemens AG / siemens.com)',
+      name: 'Siemens',
       website: 'https://www.siemens.com',
       industry: 'Industrial Automation, Digital Twins & Rail Infrastructure',
       headquarters: 'Munich & Berlin, Germany',
@@ -26,7 +56,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['heospace', 'heo space', 'heorobotics', 'heo robotics', 'highearthorbit', 'heo space robotics'],
     option: {
       id: 'heospace.com',
-      name: 'HEO (High Earth Orbit Robotics / heospace.com)',
+      name: 'HEO Robotics',
       website: 'https://heospace.com',
       industry: 'Space Technology & In-Orbit Satellite Inspection',
       headquarters: 'Sydney, Australia',
@@ -40,7 +70,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['heo gmbh', 'heo distribution', 'heo pop culture', 'ultimate guard', 'heogmbh'],
     option: {
       id: 'heo.com',
-      name: 'heo (heo.com / heo GmbH)',
+      name: 'heo',
       website: 'https://www.heo.com',
       industry: 'Pop Culture Collectibles & B2B Wholesale Distribution',
       headquarters: 'Herxheim bei Landau, Germany',
@@ -54,7 +84,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['stripe', 'strip', 'striep', 'stripe payments', 'stripe checkout'],
     option: {
       id: 'stripe.com',
-      name: 'Stripe (stripe.com)',
+      name: 'Stripe',
       website: 'https://stripe.com',
       industry: 'Financial Technology & Internet Payment Infrastructure',
       headquarters: 'San Francisco, CA & Dublin, Ireland',
@@ -68,7 +98,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['spotify', 'spotifi', 'spotfy', 'spotif', 'spotfiy'],
     option: {
       id: 'spotify.com',
-      name: 'Spotify (spotify.com)',
+      name: 'Spotify',
       website: 'https://www.spotify.com',
       industry: 'Digital Audio & Music Streaming',
       headquarters: 'Stockholm, Sweden & New York, NY',
@@ -82,7 +112,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['sap', 'sapp', 'sap se', 'sap software', 's4hana'],
     option: {
       id: 'sap.com',
-      name: 'SAP (SAP SE / sap.com)',
+      name: 'SAP',
       website: 'https://www.sap.com',
       industry: 'Enterprise Resource Planning (ERP) & Business Software',
       headquarters: 'Walldorf, Germany',
@@ -96,7 +126,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['notion', 'notn', 'notio', 'notoin', 'notion workspace'],
     option: {
       id: 'notion.so',
-      name: 'Notion (notion.so)',
+      name: 'Notion',
       website: 'https://www.notion.so',
       industry: 'Collaborative Workspace & Knowledge Management',
       headquarters: 'San Francisco, CA',
@@ -110,7 +140,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['mercury', 'mercuri', 'mercury bank', 'mercury fintech'],
     option: {
       id: 'mercury.com',
-      name: 'Mercury (mercury.com)',
+      name: 'Mercury',
       website: 'https://mercury.com',
       industry: 'Fintech & Startup Banking',
       headquarters: 'San Francisco, CA, USA',
@@ -124,7 +154,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['mercury marine', 'mercurymarine', 'mercury motors', 'mercury outboard'],
     option: {
       id: 'mercurymarine.com',
-      name: 'Mercury Marine (mercurymarine.com)',
+      name: 'Mercury Marine',
       website: 'https://www.mercurymarine.com',
       industry: 'Marine Propulsion & Outboard Motors',
       headquarters: 'Fond du Lac, WI, USA',
@@ -138,7 +168,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['square', 'squar', 'block', 'square pos', 'square payments'],
     option: {
       id: 'squareup.com',
-      name: 'Square / Block (squareup.com)',
+      name: 'Square',
       website: 'https://squareup.com',
       industry: 'Financial Technology & Point of Sale',
       headquarters: 'San Francisco, CA, USA',
@@ -152,7 +182,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['square enix', 'squareenix', 'final fantasy'],
     option: {
       id: 'square-enix.com',
-      name: 'Square Enix (square-enix.com)',
+      name: 'Square Enix',
       website: 'https://www.square-enix.com',
       industry: 'Video Game Publishing & Entertainment',
       headquarters: 'Shinjuku, Tokyo, Japan',
@@ -166,7 +196,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['apple', 'appl', 'aple', 'apple inc', 'apple computer'],
     option: {
       id: 'apple.com',
-      name: 'Apple (apple.com)',
+      name: 'Apple',
       website: 'https://apple.com',
       industry: 'Consumer Electronics & Services Ecosystem',
       headquarters: 'Cupertino, CA, USA',
@@ -180,7 +210,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['microsoft', 'microsft', 'micro soft', 'msft'],
     option: {
       id: 'microsoft.com',
-      name: 'Microsoft (microsoft.com)',
+      name: 'Microsoft',
       website: 'https://microsoft.com',
       industry: 'Cloud Computing, Enterprise Software & AI',
       headquarters: 'Redmond, WA, USA',
@@ -194,7 +224,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['google', 'googl', 'gogle', 'alphabet', 'google search'],
     option: {
       id: 'google.com',
-      name: 'Google / Alphabet (google.com)',
+      name: 'Google',
       website: 'https://google.com',
       industry: 'Search, Digital Advertising & Cloud AI',
       headquarters: 'Mountain View, CA, USA',
@@ -208,7 +238,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['nvidia', 'nvda', 'nividia', 'nvida', 'geforce'],
     option: {
       id: 'nvidia.com',
-      name: 'NVIDIA (nvidia.com)',
+      name: 'NVIDIA',
       website: 'https://nvidia.com',
       industry: 'Accelerated Computing, GPUs & AI Hardware',
       headquarters: 'Santa Clara, CA, USA',
@@ -222,7 +252,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['asmodee', 'asmodee group', 'asmode', 'asmodee distribution'],
     option: {
       id: 'asmodee.com',
-      name: 'Asmodee Group (asmodee.com)',
+      name: 'Asmodee Group',
       website: 'https://asmodee.com',
       industry: 'Tabletop Games & International Distribution',
       headquarters: 'Guyancourt, France',
@@ -236,7 +266,7 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     aliases: ['ultra pro', 'ultrapro', 'ultra pro international'],
     option: {
       id: 'ultrapro.com',
-      name: 'Ultra PRO International (ultrapro.com)',
+      name: 'Ultra PRO International',
       website: 'https://ultrapro.com',
       industry: 'Trading Card Accessories & Collectible Protection',
       headquarters: 'Commerce, CA, USA',
@@ -302,7 +332,15 @@ export function findSimilarCompanies(query: string): CompanyDisambiguationOption
     ];
   }
 
-  const queriesToCheck = Array.from(new Set([rawClean, withoutTLD])).filter((q) => q.length >= 3);
+  const rawWords = query
+    .toLowerCase()
+    .replace(/[.,!?:;]+/g, ' ')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length >= 3 && w !== 'and' && w !== 'the' && w !== 'for');
+
+  const queriesToCheck = Array.from(new Set([rawClean, withoutTLD, ...rawWords])).filter((q) => q.length >= 3);
   const results: { option: CompanyDisambiguationOption; score: number }[] = [];
   const seenIds = new Set<string>();
 
@@ -312,19 +350,25 @@ export function findSimilarCompanies(query: string): CompanyDisambiguationOption
       for (const alias of candidate.aliases) {
         const cleanAlias = alias.toLowerCase().replace(/[^a-z0-9]/g, '');
         
-        // 1. Exact match on alias
-        if (q === cleanAlias) {
+        // 1. Exact match on alias or full query match
+        if (q === cleanAlias || rawClean === cleanAlias) {
           bestCandidateScore = Math.min(bestCandidateScore, 0);
           break;
         }
 
-        // 2. Prefix match: company alias starts with the query (e.g. "sie" -> "siemens", "str" -> "stripe")
+        // 2. Phrase containment (e.g. query "computers monitors and accessories" contains alias "computers")
+        if (rawClean.length >= 6 && cleanAlias.length >= 4 && (rawClean.includes(cleanAlias) || cleanAlias.includes(rawClean))) {
+          bestCandidateScore = Math.min(bestCandidateScore, 1);
+          continue;
+        }
+
+        // 3. Prefix match: company alias starts with the query (e.g. "sie" -> "siemens", "str" -> "stripe")
         if (cleanAlias.startsWith(q)) {
           bestCandidateScore = Math.min(bestCandidateScore, 1);
           continue;
         }
 
-        // 3. Word-boundary match: check if individual word in alias starts with query (e.g. "marine" -> "mercury marine")
+        // 4. Word-boundary match: check if individual word in alias starts with query (e.g. "marine" -> "mercury marine")
         const words = alias.toLowerCase().split(/\s+/);
         const matchesWordStart = words.some((w) => w.replace(/[^a-z0-9]/g, '').startsWith(q));
         if (matchesWordStart) {
@@ -332,7 +376,7 @@ export function findSimilarCompanies(query: string): CompanyDisambiguationOption
           continue;
         }
 
-        // 4. Calibrated Levenshtein distance for genuine typos (only for queries >= 4 chars)
+        // 5. Calibrated Levenshtein distance for genuine typos (only for queries >= 4 chars)
         if (q.length >= 4) {
           const maxAllowed = q.length <= 5 ? 1 : 2;
           const lengthDiff = Math.abs(q.length - cleanAlias.length);
@@ -373,7 +417,7 @@ export const DISAMBIGUATION_MAP: Record<string, CompanyDisambiguationOption[]> =
 
 export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
   'heospace.com': {
-    companyName: 'HEO (High Earth Orbit Robotics / HEO Space)',
+    companyName: 'HEO Robotics',
     website: 'https://heospace.com',
     simpleExplanation: 'HEO is a space technology company that photographs and inspects satellites and space objects while they are orbiting Earth. Instead of building and launching expensive dedicated camera satellites, HEO equips existing Earth-observation satellites with smart fly-by software and space cameras to capture on-demand, close-up images of passing spacecraft and space debris.',
     websiteAnalysis: {
@@ -474,7 +518,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
   },
 
   'heo.com': {
-    companyName: 'heo (heo.com / heo GmbH)',
+    companyName: 'heo',
     website: 'https://www.heo.com',
     simpleExplanation: 'heo is one of the world\'s leading B2B wholesale distributors and manufacturers of licensed pop culture collectibles, comic merchandise, action figures, board games, and trading card accessories. If a comic book store, toy shop, gaming cafe, or e-commerce retailer wants to stock official merchandise from franchises like Pokémon, Marvel, Star Wars, Harry Potter, or Disney, they purchase their inventory in bulk directly from heo.',
     websiteAnalysis: {
@@ -786,7 +830,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
   },
 
   'siemens': {
-    companyName: 'Siemens AG',
+    companyName: 'Siemens',
     website: 'https://www.siemens.com',
     simpleExplanation: 'Siemens is a giant industrial engineering and technology company. Instead of selling consumer gadgets, Siemens builds the complex technology that powers factories, trains, electrical power grids, and smart hospital buildings.',
     websiteAnalysis: {
@@ -889,7 +933,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
   },
 
   'sap': {
-    companyName: 'SAP SE',
+    companyName: 'SAP',
     website: 'https://www.sap.com',
     simpleExplanation: 'SAP makes business management software. Large organizations use SAP as their central computer brain to track money, employee payroll, warehouse inventory, manufacturing parts, and customer orders across dozens of countries in real time.',
     websiteAnalysis: {
@@ -1089,6 +1133,107 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       { title: 'Notion Product Overview & Enterprise', url: 'https://www.notion.so/enterprise' },
     ],
   },
+
+  'dell.com': {
+    companyName: 'Dell Technologies',
+    website: 'https://www.dell.com',
+    simpleExplanation: 'Dell builds and sells the hardware that people and companies compute on, including laptops and desktops for users, and servers, storage, and networking for data centers. It also sells software, support, and financing around that hardware. The company is now heavily focused on AI-optimized servers.',
+    websiteAnalysis: {
+      url: 'https://www.dell.com',
+      headline: 'Computers, Monitors, and Technology Solutions',
+      summary: 'Dell Technologies delivers comprehensive computing hardware, laptops, monitors, accessories, edge client devices, high-performance data center infrastructure, and multicloud ecosystems.',
+      keyHighlights: [
+        'Client Solutions Group (CSG) providing commercial workstations (Latitude, Precision, OptiPlex), consumer laptops (XPS, Inspiron, Alienware), display monitors, and computing accessories.',
+        'Infrastructure Solutions Group (ISG) delivering high-density AI servers, PowerEdge compute nodes, and PowerStore enterprise data storage.',
+        'APEX as-a-service offerings and Dell Financial Services providing flexible capital financing for enterprise infrastructure deployments.',
+      ],
+    },
+    products: [
+      {
+        name: 'Computers, Monitors, and Accessories (CSG)',
+        description: 'Laptops, desktop workstations, commercial displays, monitors, and computing accessories. Commercial business devices account for the vast majority of volume alongside consumer PCs.',
+      },
+      {
+        name: 'Infrastructure Solutions Group (ISG)',
+        description: 'AI-optimized servers, traditional PowerEdge servers, networking switches, and enterprise data storage systems. The division generates over $60B in annual revenue with AI-optimized servers driving rapid growth.',
+      },
+      {
+        name: 'APEX As-a-Service & Financial Solutions',
+        description: 'Pay-per-use cloud infrastructure, managed backup storage, and Dell Financial Services providing customized payment flexibility and equipment leasing.',
+      },
+    ],
+    clientProfiles: [
+      {
+        targetSegment: 'Enterprises and Public Institutions',
+        description: 'Global enterprises, government agencies, universities, and healthcare systems deploying mission-critical servers, storage area networks, and fleet laptops.',
+        examples: ['Fortune 500 enterprises', 'Higher education research institutions', 'Government civilian and defense agencies'],
+      },
+      {
+        targetSegment: 'Cloud and AI Infrastructure Operators',
+        description: 'Specialized cloud service providers and enterprise AI labs investing heavily in high-density GPU server clusters for machine learning workloads.',
+        examples: ['Hyperscale cloud partners', 'AI engineering startups', 'National computing laboratories'],
+      },
+      {
+        targetSegment: 'Small and Medium Businesses & Consumers',
+        description: 'Growing firms and individual professionals purchasing PCs, monitors, and peripherals through direct online ordering and retail channels.',
+        examples: ['Professional creative studios', 'Remote work teams', 'Individual PC and gaming consumers'],
+      },
+    ],
+    vitals: {
+      createdYear: '1984 (Founded by Michael Dell, who continues to serve as Chairman and CEO. Formerly known as Denali Holding, it became Dell Technologies in 2016 following the historic EMC merger.)',
+      employeeCount: '~97,000 employees globally (as of 2026 filings, following the corporate spin-off of VMware)',
+      headquarters: 'Round Rock, Texas, USA',
+    },
+    monetization: {
+      summary: 'Dell makes money by selling high-margin enterprise data center hardware, personal computing systems, recurring IT service contracts, and infrastructure financing fees.',
+      modelType: 'Enterprise Hardware Systems + IT Support SLAs + APEX Subscription Services',
+      revenueStreams: [
+        'Direct commercial sales of AI-optimized servers, storage systems, and enterprise networking hardware',
+        'Volume sales of commercial client notebooks, desktop workstations, and display monitors',
+        'Multi-year enterprise ProSupport warranties, installation services, and software licenses',
+        'APEX consumption-based subscriptions and Dell Financial Services financing agreements',
+      ],
+      pricingStructure: 'Volume-tiered enterprise sales quotes for commercial servers and transparent tiered retail pricing for client laptops and monitors.',
+    },
+    marketIntel: {
+      marketShare: '~19% global personal computer market share and ~17% worldwide enterprise x86 server market share.',
+      companySharePercent: 20,
+      marketPosition: 'Global Market Leader in Enterprise Servers and Commercial PCs',
+      competitors: [
+        {
+          name: 'HP Inc. / HPE',
+          website: 'https://hp.com',
+          marketShare: '~22% Direct Rival',
+          sharePercent: 22,
+          focusDifference: 'HP Inc. competes directly in commercial PCs and printers, while Hewlett Packard Enterprise (HPE) competes in enterprise hybrid cloud servers and storage.',
+        },
+        {
+          name: 'Lenovo Group',
+          website: 'https://lenovo.com',
+          marketShare: '~24% Global Volume Leader',
+          sharePercent: 24,
+          focusDifference: 'Global number one PC volume manufacturer with strong presence in ThinkPad enterprise laptops and growing ThinkSystem data center servers.',
+        },
+        {
+          name: 'Supermicro (Super Micro Computer)',
+          website: 'https://supermicro.com',
+          marketShare: '~12% AI Server Challenger',
+          sharePercent: 12,
+          focusDifference: 'Specialized high-density modular server builder competing aggressively in liquid-cooled AI GPU clusters and green computing data centers.',
+        },
+      ],
+      otherMarketShare: {
+        percentage: '~22% Combined Share',
+        sharePercent: 22,
+        description: 'Original design manufacturers (ODMs) and specialized enterprise vendors including Cisco Systems, Inspur, and Asus.',
+      },
+    },
+    sources: [
+      { title: 'Dell Technologies SEC Filings and Investor Relations', url: 'https://investors.delltechnologies.com' },
+      { title: 'Dell Official Website and Solutions', url: 'https://www.dell.com' },
+      { title: 'Dell Technologies Annual 10-K Disclosures', url: 'https://investors.delltechnologies.com' },
+    ],
+  },
 };
 
 BENCHMARK_SUMMARIES['siemens.com'] = BENCHMARK_SUMMARIES['siemens'];
@@ -1096,3 +1241,4 @@ BENCHMARK_SUMMARIES['stripe.com'] = BENCHMARK_SUMMARIES['stripe'];
 BENCHMARK_SUMMARIES['spotify.com'] = BENCHMARK_SUMMARIES['spotify'];
 BENCHMARK_SUMMARIES['sap.com'] = BENCHMARK_SUMMARIES['sap'];
 BENCHMARK_SUMMARIES['notion.so'] = BENCHMARK_SUMMARIES['notion'];
+BENCHMARK_SUMMARIES['dell'] = BENCHMARK_SUMMARIES['dell.com'];
