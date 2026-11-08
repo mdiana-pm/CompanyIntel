@@ -176,7 +176,7 @@ export default function App() {
       <section className="bg-white border-b border-slate-200 py-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <form onSubmit={handleSubmit} className="space-y-3">
-            <label htmlFor="company-search-input" className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+            <label htmlFor="company-search-query" className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
               Enter Company Name or Website
             </label>
             <div className="flex flex-col sm:flex-row gap-2.5">
@@ -185,8 +185,13 @@ export default function App() {
                   <Search className="w-4 h-4" />
                 </div>
                 <input
-                  id="company-search-input"
+                  id="company-search-query"
+                  name="company_search_query"
                   type="text"
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   maxLength={30}
                   value={searchInput}
                   onFocus={() => setIsInputFocused(true)}

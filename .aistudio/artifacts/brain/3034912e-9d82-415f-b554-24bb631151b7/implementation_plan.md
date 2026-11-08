@@ -1,90 +1,66 @@
-# Microsoft Search Precision & Bot-Defense Shielding
+# Search History Removal & Input Form Calibration
 
-Resolve the issue where searching for "microsoft.com" incorrectly displays Dell Technologies and Apple by removing domain extensions from tokenized search keywords, preventing ".com" from matching "computers" and "computer", and adding a verified Microsoft benchmark profile with automated WAF bot-block filtering.
+Eliminate the browser's native past search history popup (displaying previously entered queries like "heo", "sflöwjerfloejöroieuwjojuiwioru", "sap", "dell", "trustyou", and "micros#") from the search input, while ensuring general browser autofill capabilities remain intact.
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
 > **Summary of Investigation**:
-> 1. **Why Dell & Apple Appeared**: When searching `microsoft.com`, punctuation is replaced with spaces, splitting the input into `["microsoft", "com"]`. Because `"com"` has 3 letters, it was evaluated as an independent search word. Dell has aliases including `"computers"` and `"dell computers"`, while Apple has `"apple computer"`. Since both contain words starting with `"com"`, the algorithm matched Microsoft, Dell, and Apple together, triggering the multi-entity selector.
-> 2. **Why It Showed "Your request has been blocked" on Selection**: Selecting Microsoft made a live scrape request to `microsoft.com`. Microsoft's Akamai/Azure Web Application Firewall flagged the datacenter request as automated traffic and served a block page with HTTP 200 containing `<title>Your request has been blocked. This could be due to several reasons.</title>`.
+> - **The Cause of the Dropdown**: When the user presses Enter or clicks "Research", the browser automatically caches previous text entries under the input's identifier (`company-search-input`). When focusing the empty input, Chrome displays this cached form history in a native white popup.
+> - **User Decision**: The user requested to **remove search history**, while specifying that **autofill should not be disabled**.
 
-- **Confirmed Decision 1**: Strip top-level domain extensions (`.com`, `.net`, `.org`, `.io`, `.ai`, `.co`, `.de`, `.uk`, etc.) before splitting queries into keyword tokens, and blacklist TLD strings from prefix matching.
-- **Confirmed Decision 2**: When a search resolves to a single verified company (e.g. `microsoft.com` resolving to Microsoft), bypass the multi-entity selection screen and open the executive report immediately.
-- **Confirmed Decision 3**: Add Microsoft (`microsoft.com`) to `BENCHMARK_SUMMARIES` and `ALL_COMPANY_CANDIDATES` with verified data (Azure, Microsoft 365, Windows, Copilot AI), ensuring instant, reliable loading without triggering firewall bot blocks.
-- **Confirmed Decision 4**: Add an automated WAF blocker detector in the live scraper to detect titles like *"Your request has been blocked"*, *"Access Denied"*, or *"Security Check"* and fall back to Wikipedia and clean corporate data.
+- **Confirmed Decision 1**: Eliminate the historical submission cache on the search bar so past queries (including typos and test strings) do not pop up on focus.
+- **Confirmed Decision 2**: Isolate the search query input with `autoComplete="off"` and a refreshed field identifier, ensuring standard browser autofill for system accounts/passwords remains untouched.
+- **Confirmed Decision 3**: Provide a clean interaction where only relevant matching company suggestions (e.g., matching companies when typing $\ge 3$ characters) appear, leaving empty focus clean and uncluttered.
 
 ---
 
 ## 1. Overview & Core Concept
 
-### Root Cause Analysis
+### What Caused the Dropdown
+In the uploaded screenshot (`image_e08ea924.png`), focusing the search bar reveals a native browser dropdown containing:
+* `heo`
+* `sflöwjerfloejöroieuwjojuiwioru` (the test keyboard mash)
+* `sap`
+* `dell`
+* `trustyou`
+* `micros#`
 
-```
-User Input: "microsoft.com"
-          │
-          ▼
-   Split on punctuation: ["microsoft", "com"]
-          │
-          ├────────────────────────────────┬────────────────────────────────┐
-          ▼                                ▼                                ▼
-Token: "microsoft"                  Token: "com"                     Token: "com"
-Matches: Microsoft (1975)           Starts with "com":               Starts with "com":
-                                    "dell computers" (Dell)          "apple computer" (Apple)
-                                    "computers monitors..." (Dell)
-          │                                │                                │
-          └────────────────────────────────┴────────────────────────────────┘
-                                           │
-                                           ▼
-                     Matches Found: [Microsoft, Dell, Apple]
-                                           │
-                                           ▼
-           Triggered: "Which company would you like to research?"
-```
+This occurs because standard browser forms store submitted text strings per input `id`/`name`.
 
 ### The Solution
-
-1. **Domain Extension Sanitation**:
-   - Sanitize the input by removing known TLD extensions (`.com`, `.org`, `.net`, `.io`, `.ai`, `.co`, `.de`, etc.) before tokenizing into words.
-   - Filter out standalone TLD strings (`com`, `org`, `net`, `gov`, `edu`, `io`, `ai`, `app`, `dev`, `co`, `uk`, `de`, `eu`) from `rawWords` so domain extensions can never act as independent 3-letter prefix search terms.
-2. **Direct Report Display**:
-   - Searching `microsoft.com` will only produce the search token `"microsoft"`.
-   - Matching returns strictly one entity (`Microsoft`), immediately presenting the verified executive intelligence report without asking *"Did you mean?"* or *"Which company would you like to research?"*.
-3. **Verified Microsoft Benchmark Intelligence**:
-   - Integrate Microsoft into `BENCHMARK_SUMMARIES` and `ALL_COMPANY_CANDIDATES` with verified data across products, client profiles, monetization, vitals, and market share. Strictly zero semicolons.
-4. **WAF Bot-Defense Detection**:
-   - If an external website returns a page containing firewall block signatures (e.g. Akamai, Cloudflare, CloudFront, Imperva challenge titles), the backend scraper automatically rejects the blocked headline and uses verified knowledge graph and Wikipedia data.
+1. **Reset Field Identity & Suppress Form History**:
+   - Update the input attribute to `autoComplete="off"` specifically for this query field.
+   - Update the input `id` and `name` to a refreshed search attribute (e.g. `company-search-query`), detaching it from Chrome's previous submission history database.
+2. **Preserve General Browser Autofill**:
+   - Do not disable browser-wide autofill policies or non-search credentials.
+   - Keep standard accessible form submission handlers intact.
+3. **User Action for Immediate Browser-Level Cache Purge**:
+   - Highlight the quick Chrome shortcut (`Shift + Delete` on Windows/Linux or `Shift + Fn + Delete` on macOS) to instantly purge any residual browser-level history items.
 
 ---
 
 ## 2. User Experience & Visual Design
 
-### Clean Single-Match Search Flow
+### Clean Focus State (No History Clutter)
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 🔍  microsoft.com                                         ✕ │ [ Research ]
-└─────────────────────────────────────────────────────────────┘
-                               │
-                               ▼ (Direct single-match bypass)
-┌─────────────────────────────────────────────────────────────┐
-│ [MS] Microsoft (microsoft.com)                              │
-│      Cloud Computing, Enterprise Software & AI · Redmond    │
+│ ENTER COMPANY NAME OR WEBSITE                               │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ 🔍  |                                                   │ │  [ Research ]
+│ └─────────────────────────────────────────────────────────┘ │
 │                                                             │
-│ ┌───────────────┐ ┌───────────────────┐ ┌─────────────────┐ │
-│ │ WHEN CREATED  │ │ NUMBER EMPLOYEES  │ │ HEADQUARTERS    │ │
-│ │ 1975          │ │ ~228,000          │ │ Redmond, WA     │ │
-│ └───────────────┘ └───────────────────┘ └─────────────────┘ │
+│   (Clean empty state - NO past query dropdown appears)      │
 │                                                             │
-│ ◆ WHAT THE COMPANY DOES                                     │
-│ Global technology leader empowering people and organizations │
-│ through intelligent cloud platforms, enterprise software,    │
-│ personal computing hardware, and generative AI innovations. │
+│                    ┌───────────┐                            │
+│                    │  [ 🏢 ]   │                            │
+│                    └───────────┘                            │
+│                 Enter Company Name                          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-- **No False Disambiguation**: Neither Dell nor Apple appears when typing `microsoft.com`.
-- **No Block Page Title**: The header displays *"Microsoft"* with badge `"MS"` instead of *"Your request has been blocked"* with `"YO"`.
-- **Immediate Value**: Loads the full verified executive intelligence report in a single step.
+- **On Focus with Empty Input**: No native dropdown pops up. The user experiences a clean, modern interface without past search clutter or gibberish test inputs.
+- **On Typing 3+ Characters**: The app's custom matching suggestions dropdown appears smoothly with real company options.
 
 ---
 
@@ -92,45 +68,25 @@ Matches: Microsoft (1975)           Starts with "com":               Starts with
 
 | Decision | Chosen Approach | Rationale |
 |---|---|---|
-| **Domain Extension Handling** | Strip TLDs before tokenizing + blacklist TLDs from prefix matching | Stops `.com` from behaving as an independent search word while preserving full domain matching for exact queries like `heospace.com` or `dell.com`. |
-| **Microsoft Grounding** | Add complete benchmark profile in `BENCHMARK_SUMMARIES` | Prevents Akamai/Azure WAF bot-challenge blocks from ever affecting Microsoft searches and ensures instant response times. |
-| **WAF Block Filter** | Reject titles matching known bot-challenge strings | Protects against future scrapes of enterprise websites that return HTTP 200 with block-screen titles. |
+| **Search History Suppression** | `autoComplete="off"` on input + refreshed field name | Eliminates the native browser query history popup without interfering with system-wide browser autofill settings. |
+| **Form Association** | Retain `<form onSubmit={handleSubmit}>` | Keeps standard keyboard navigation (pressing Enter submits the search) while preventing historical query caching. |
 
 ---
 
 ## 4. Technical Architecture & Data Strategy
 
-### System Flow Diagram
+### Search Bar Component Flow
 ```
-                     User Search Input
-                            │
-                            ▼
-              Strip Domain Extensions (TLDs)
-               ("microsoft.com" -> "microsoft")
-                            │
-                            ▼
-              Extract Normalized Keyword Tokens
-                    Tokens: ["microsoft"]
-                            │
-                            ▼
-               Search ALL_COMPANY_CANDIDATES
-                            │
-                 ┌──────────┴──────────┐
-                 │                     │
-          Single Match           Multiple Matches
-          (1 candidate)           (2+ candidates)
-                 │                     │
-                 ▼                     ▼
-         Display Executive    Show Disambiguation Selector
-          Report Directly      "Which company would you like
-          (e.g. Microsoft)             to research?"
+User Focuses Input
+        │
+        ▼
+Is Input Empty? ───► YES ───► Clean input (No browser history popup)
+        │
+        ▼ NO (length >= 3)
+Custom Live Suggestions Displayed (e.g. Siemens, Stripe, Microsoft)
 ```
 
 ### Components to Update
-1. `src/data/benchmarks.ts`:
-   - In `findSimilarCompanies`: Strip TLD extensions before splitting `rawWords`; filter out TLD stop-words (`com`, `net`, `org`, `io`, `ai`, `de`, `uk`, etc.).
-   - Add `microsoft.com` candidate item to `ALL_COMPANY_CANDIDATES` with aliases (`microsoft`, `microsoft corporation`, `msft`, `microsoft.com`).
-   - Add comprehensive `BENCHMARK_SUMMARIES['microsoft.com']` and `BENCHMARK_SUMMARIES['microsoft']`.
-2. `server.ts`:
-   - Add `microsoft`, `microsoftcom`, `msft` to `BENCHMARK_ALIASES` and whitelist.
-   - In `buildReportFromScrapedData`: Add check for bot-block title patterns (`blocked`, `access denied`, `cloudflare`, `akamai`, `captcha`) to prevent saving firewall block text as company names.
+- `src/App.tsx`:
+  - Set `autoComplete="off"` on `<input id="company-search-query" name="company_search_query" />`.
+  - Add `autoCapitalize="none"` and `autoCorrect="off"` to prevent mobile browser dictionary overrides.

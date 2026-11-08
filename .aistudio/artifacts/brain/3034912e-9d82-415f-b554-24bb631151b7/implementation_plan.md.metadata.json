@@ -1,6 +1,6 @@
 {
-  "summary":  "Implementation plan to fix the Microsoft search query falsely displaying Dell and Apple, by eliminating domain extension token pollution (.com matching computers), enabling direct single-company report loading, and adding verified Microsoft benchmark data with WAF bot-block shielding.",
-  "updatedAt":  "2026-11-08T11:29:41.426589467Z",
+  "summary":  "Implementation plan to remove the browser search history dropdown from the company search bar while preserving standard browser autofill capabilities.",
+  "updatedAt":  "2026-11-08T18:42:43.889502485Z",
   "requestFeedback":  true,
   "userFacing":  true
 }
