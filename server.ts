@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 import { BENCHMARK_SUMMARIES, DISAMBIGUATION_MAP, findSimilarCompanies } from './src/data/benchmarks.ts';
-import { CompanySummaryReport, CompanyDisambiguationOption, DisambiguationResponse } from './src/types.ts';
+import type { CompanySummaryReport, CompanyDisambiguationOption, DisambiguationResponse } from './src/types.ts';
 
 dotenv.config();
 
@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const PORT = 3000;
 
 app.use(express.json());
 
@@ -57,6 +57,13 @@ const BENCHMARK_ALIASES: Record<string, string> = {
   'computersmonitors': 'dell.com',
   'computers': 'dell.com',
   'monitors': 'dell.com',
+  'trustyou': 'trustyou.com',
+  'trustyoucom': 'trustyou.com',
+  'trustyougmbh': 'trustyou.com',
+  'trustyouhospitality': 'trustyou.com',
+  'microsoft': 'microsoft.com',
+  'microsoftcom': 'microsoft.com',
+  'msft': 'microsoft.com',
 };
 
 // Gibberish detector for random keyboard mashing (e.g. sflöwjerfloejöroieuwjojuewioru)
@@ -74,8 +81,8 @@ function isLikelyGibberish(str: string): boolean {
   const whitelist = [
     'dell', 'heo', 'sap', 'ibm', 'bmw', 'asml', 'amd', 'intel', 'stripe', 'spotify',
     'siemens', 'notion', 'mercury', 'square', 'airbnb', 'linear', 'vercel',
-    'oracle', 'microsoft', 'google', 'apple', 'amazon', 'meta', 'nvidia', 'tesla',
-    'uber', 'lyft', 'slack', 'zoom', 'github', 'gitlab', 'docker', 'reddit'
+    'oracle', 'microsoft', 'msft', 'google', 'apple', 'amazon', 'meta', 'nvidia', 'tesla',
+    'uber', 'lyft', 'slack', 'zoom', 'github', 'gitlab', 'docker', 'reddit', 'trustyou'
   ];
   if (whitelist.includes(clean)) return false;
 
@@ -222,34 +229,54 @@ async function scrapeLiveWebsite(query: string): Promise<ScrapedWebsiteData | nu
     const html = await res.text();
     const cleanUrl = res.url || targetUrl;
 
+    // Helper to detect WAF bot-challenge or access block screens (e.g. Akamai, Cloudflare)
+    const isWafBlock = (str: string) => {
+      const lower = str.toLowerCase();
+      return (
+        lower.includes('blocked') ||
+        lower.includes('access denied') ||
+        lower.includes('attention required') ||
+        lower.includes('security check') ||
+        lower.includes('just a moment') ||
+        lower.includes('cloudflare') ||
+        lower.includes('akamai') ||
+        lower.includes('automated requests') ||
+        lower.includes('verify you are human')
+      );
+    };
+
     // 1. Extract Title
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const title = titleMatch ? decodeAndClean(titleMatch[1].trim()) : '';
+    let title = titleMatch ? decodeAndClean(titleMatch[1].trim()) : '';
+    if (isWafBlock(title)) title = '';
 
     // 2. Extract Meta description
     const descMatch =
       html.match(/<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i) ||
       html.match(/<meta\s+content=["']([^"']+)["']\s+name=["']description["']/i);
-    const description = descMatch ? decodeAndClean(descMatch[1].trim()) : '';
+    let description = descMatch ? decodeAndClean(descMatch[1].trim()) : '';
+    if (isWafBlock(description)) description = '';
 
     // 3. Extract OpenGraph tags
     const ogTitleMatch = html.match(/<meta\s+(?:property|name)=["']og:title["']\s+content=["']([^"']+)["']/i);
-    const ogTitle = ogTitleMatch ? decodeAndClean(ogTitleMatch[1].trim()) : '';
+    let ogTitle = ogTitleMatch ? decodeAndClean(ogTitleMatch[1].trim()) : '';
+    if (isWafBlock(ogTitle)) ogTitle = '';
 
     const ogDescMatch = html.match(/<meta\s+(?:property|name)=["']og:description["']\s+content=["']([^"']+)["']/i);
-    const ogDescription = ogDescMatch ? decodeAndClean(ogDescMatch[1].trim()) : '';
+    let ogDescription = ogDescMatch ? decodeAndClean(ogDescMatch[1].trim()) : '';
+    if (isWafBlock(ogDescription)) ogDescription = '';
 
     // 4. Extract H1, H2, H3 headings
     const headingMatches = [...html.matchAll(/<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/gi)];
     const headings = headingMatches
       .map((m) => decodeAndClean(m[1].replace(/<[^>]+>/g, '').trim()))
-      .filter((h) => h.length > 2 && h.length < 160 && !h.toLowerCase().includes('cookie') && !h.toLowerCase().includes('subscribe'));
+      .filter((h) => h.length > 2 && h.length < 160 && !h.toLowerCase().includes('cookie') && !h.toLowerCase().includes('subscribe') && !isWafBlock(h));
 
     // 5. Extract Paragraphs
     const pMatches = [...html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
     const paragraphs = pMatches
       .map((m) => decodeAndClean(m[1].replace(/<[^>]+>/g, '').trim()))
-      .filter((p) => p.length > 35 && p.length < 400 && !p.toLowerCase().includes('cookie') && !p.toLowerCase().includes('privacy policy'))
+      .filter((p) => p.length > 35 && p.length < 400 && !p.toLowerCase().includes('cookie') && !p.toLowerCase().includes('privacy policy') && !isWafBlock(p))
       .slice(0, 10);
 
     // 6. Extract Schema.org JSON-LD
@@ -430,20 +457,32 @@ async function buildReportFromScrapedData(companyName: string, scraped: ScrapedW
     }
   }
 
+  // Sanitize any residual bot-challenge or long firewall block string
+  const isBlockTitle = (s: string) => /blocked|access\s+denied|attention\s+required|security\s+check|captcha|just\s+a\s+moment|cloudflare|akamai/i.test(s);
+  if (!compName || isBlockTitle(compName) || compName.length > 35) {
+    compName = candidateBase.charAt(0).toUpperCase() + candidateBase.slice(1);
+  }
+
   // Known brand normalization
   if (compName.toLowerCase().includes('dell') || candidateBase.toLowerCase() === 'dell') {
     compName = 'Dell Technologies';
+  } else if (compName.toLowerCase().includes('microsoft') || candidateBase.toLowerCase() === 'microsoft') {
+    compName = 'Microsoft';
   }
 
   // Filter out low-value cookie wall or login headings
   const filteredHeadings = scraped.headings.filter((h) => {
     const l = h.toLowerCase();
-    return !l.includes('cookie') && !l.includes('welcome') && !l.includes('basket') && !l.includes('cart') && !l.includes('sign in') && !l.includes('terms') && !l.includes('privacy');
+    return !l.includes('cookie') && !l.includes('welcome') && !l.includes('basket') && !l.includes('cart') && !l.includes('sign in') && !l.includes('terms') && !l.includes('privacy') && !isBlockTitle(h);
   });
 
   let headline = filteredHeadings[0] || (otherSources.description ? `${compName} - ${otherSources.description}` : `${compName} Official Platform`);
   if (compName === 'Dell Technologies') {
     headline = 'Computers, Monitors, and Accessories - Technology Solutions';
+  } else if (compName === 'Microsoft') {
+    headline = 'Empowering every person and every organization on the planet to achieve more.';
+  } else if (isBlockTitle(headline)) {
+    headline = otherSources.description ? `${compName} - ${otherSources.description}` : `${compName} Official Platform`;
   }
   const summaryText = otherSources.summary || scraped.description || scraped.ogDescription || scraped.paragraphs[0] || `${compName} provides specialized digital solutions and commercial services.`;
   

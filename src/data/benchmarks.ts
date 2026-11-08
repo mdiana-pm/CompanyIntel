@@ -1,4 +1,4 @@
-import { CompanySummaryReport, CompanyDisambiguationOption } from '../types.ts';
+import type { CompanySummaryReport, CompanyDisambiguationOption } from '../types.ts';
 
 export interface CompanyCandidateItem {
   id: string;
@@ -207,15 +207,15 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
   },
   {
     id: 'microsoft.com',
-    aliases: ['microsoft', 'microsft', 'micro soft', 'msft'],
+    aliases: ['microsoft', 'microsft', 'micro soft', 'msft', 'microsoft.com', 'microsoftcom', 'microsoft corporation'],
     option: {
       id: 'microsoft.com',
       name: 'Microsoft',
-      website: 'https://microsoft.com',
+      website: 'https://www.microsoft.com',
       industry: 'Cloud Computing, Enterprise Software & AI',
       headquarters: 'Redmond, WA, USA',
       foundingYear: '1975',
-      employeeCount: '~221,000 employees',
+      employeeCount: '~228,000 employees',
       shortDescription: 'Enterprise software titan delivering Azure cloud infrastructure, Microsoft 365 productivity tools, Windows OS, and Copilot AI technologies.',
     },
   },
@@ -275,6 +275,20 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
       shortDescription: 'Pioneer manufacturer of protective sleeves, binders, deck boxes, and accessories for trading card games, sports memorabilia, and comic books.',
     },
   },
+  {
+    id: 'trustyou.com',
+    aliases: ['trustyou', 'trust you', 'trustyou gmbh', 'trustyou hospitality', 'trustyoucom'],
+    option: {
+      id: 'trustyou.com',
+      name: 'TrustYou',
+      website: 'https://www.trustyou.com',
+      industry: 'Hospitality Technology & Guest Experience AI',
+      headquarters: 'Munich, Germany',
+      foundingYear: '2008',
+      employeeCount: '~180–200 employees',
+      shortDescription: 'AI-powered guest feedback and review aggregation platform designed for hotels, global hotel chains, restaurants, and destination marketing organizations.',
+    },
+  },
 ];
 
 function levenshtein(a: string, b: string): number {
@@ -332,15 +346,26 @@ export function findSimilarCompanies(query: string): CompanyDisambiguationOption
     ];
   }
 
-  const rawWords = query
+  const TLD_REGEX = /\.(com|co|io|so|org|net|de|eu|ai|app|fr|uk|se|tech|xyz|info|biz|me)$/i;
+  const TLD_STOP_WORDS = new Set([
+    'com', 'co', 'io', 'so', 'org', 'net', 'de', 'eu', 'ai', 'app', 'fr', 'uk', 'se', 'tech', 'xyz', 'info', 'biz', 'me', 'gov', 'edu',
+    'and', 'the', 'for', 'with', 'from', 'inc', 'llc', 'gmbh', 'ltd', 'corp'
+  ]);
+
+  // Strip TLD from query before extracting word tokens to avoid matching "com" against "computers"
+  const queryWithoutTLD = query.trim().replace(TLD_REGEX, '');
+
+  const rawWords = queryWithoutTLD
     .toLowerCase()
-    .replace(/[.,!?:;]+/g, ' ')
+    .replace(/[.,!?:;/_\\-]+/g, ' ')
     .replace(/[^a-z0-9\s]/g, '')
     .trim()
     .split(/\s+/)
-    .filter((w) => w.length >= 3 && w !== 'and' && w !== 'the' && w !== 'for');
+    .filter((w) => w.length >= 3 && !TLD_STOP_WORDS.has(w));
 
-  const queriesToCheck = Array.from(new Set([rawClean, withoutTLD, ...rawWords])).filter((q) => q.length >= 3);
+  const queriesToCheck = Array.from(new Set([rawClean, withoutTLD, ...rawWords])).filter(
+    (q) => q.length >= 3 && !TLD_STOP_WORDS.has(q)
+  );
   const results: { option: CompanyDisambiguationOption; score: number }[] = [];
   const seenIds = new Set<string>();
 
@@ -1234,6 +1259,219 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       { title: 'Dell Technologies Annual 10-K Disclosures', url: 'https://investors.delltechnologies.com' },
     ],
   },
+  'trustyou.com': {
+    companyName: 'TrustYou',
+    website: 'https://www.trustyou.com',
+    simpleExplanation: 'TrustYou is a hospitality feedback and review technology platform that helps accommodation and dining operators understand and act on guest sentiment. The company aggregates and summarizes millions of verified guest reviews across hundreds of booking and travel portals worldwide, providing hotels and restaurants with actionable sentiment analytics, automated guest messaging, and generative AI review replies to increase guest satisfaction and direct bookings.',
+    websiteAnalysis: {
+      url: 'https://www.trustyou.com',
+      headline: 'Unify guest feedback, guest data, and guest conversations.',
+      summary: 'TrustYou offers an integrated hospitality platform connecting guest experience, customer data, and AI automation. The platform automates repetitive guest communication workflows and transforms raw review feedback into higher occupancy and direct hotel bookings.',
+      keyHighlights: [
+        'Unifies post-stay guest survey data, public review channels, and live messaging into a single Golden Profile',
+        'Direct PMS and booking channel integrations with Oracle OPERA Cloud, Mews, Apaleo, RMS Cloud, and StayNTouch',
+        'Proprietary ResponseAI technology enabling automated, on-brand multilingual responses to guest reviews across Google, Booking.com, and TripAdvisor',
+      ],
+    },
+    products: [
+      {
+        name: 'TrustYou Guest Experience Platform (CXP)',
+        description: 'Comprehensive feedback and reputation management hub consolidating guest reviews, post-stay satisfaction surveys, and live messaging in one centralized interface.',
+      },
+      {
+        name: 'TrustYou Meta-Reviews & TrustScore',
+        description: 'Verified multi-source review summary widgets and algorithmic sentiment scores embedded into major online travel search portals, OTAs, and hotel brand websites.',
+      },
+      {
+        name: 'ResponseAI Review Assistant',
+        description: 'Hospitality-trained generative AI engine that drafts personalized, brand-compliant replies to guest reviews on Google, Booking.com, and TripAdvisor in seconds.',
+      },
+      {
+        name: 'Customer Data Platform (CDP) & Guest Messaging',
+        description: 'Guest communication engine that unifies SMS, WhatsApp, and email conversations, triggering automated transactional messages directly from property management systems.',
+      },
+    ],
+    clientProfiles: [
+      {
+        targetSegment: 'Independent Hotels, Boutique Resorts & Global Hotel Chains',
+        description: 'Independent boutique hotels, luxury resorts, and multinational hospitality groups seeking to automate review responses, monitor guest sentiment across departments, and improve direct booking conversion.',
+        examples: ['Accor', 'Mandarin Oriental Hotel Group', 'Wyndham Hotels & Resorts', 'Louvre Hotels Group', 'Meininger Hotels'],
+      },
+      {
+        targetSegment: 'Restaurants, Bars & Food Service Groups',
+        description: 'Fine dining establishments, restaurant chains, and hotel dining outlets tracking diner feedback, culinary satisfaction ratings, and service consistency across review portals.',
+        examples: ['Casual and fine dining hospitality groups', 'Hotel restaurant outlets', 'Regional restaurant chains'],
+      },
+      {
+        targetSegment: 'Points of Interest (POIs) & Cultural Attractions',
+        description: 'Tourist attractions, museums, amusement parks, and sightseeing venues utilizing review aggregation and sentiment intelligence to benchmark visitor experiences across more than 1.3 million listings.',
+        examples: ['Regional amusement attractions', 'Historic cultural sites', 'Entertainment and event venues'],
+      },
+      {
+        targetSegment: 'Destination Marketing Organizations (DMOs) & Tourism Boards',
+        description: 'City, regional, and national tourism agencies benchmarking regional hospitality quality, traveler sentiment, and tourism campaign impact against competing destinations.',
+        examples: ['Visit Bavaria', 'Ticino Tourism', 'Regional convention and visitors bureaus'],
+      },
+    ],
+    vitals: {
+      createdYear: '2008 (Founded in Munich, Germany by Benjamin Jost and Jakob Riegger)',
+      employeeCount: '~180–200 hospitality technology and AI specialists',
+      headquarters: 'Munich, Bavaria, Germany (with global offices in Tokyo, Madrid, San Diego, and Singapore)',
+    },
+    monetization: {
+      summary: 'TrustYou operates on a B2B SaaS subscription model with recurring annual contracts tiered by hotel room capacity, restaurant outlet count, and activated software modules. It also monetizes enterprise API data feeds of Meta-Reviews to major travel search portals.',
+      modelType: 'B2B Hospitality SaaS and API Data Licensing',
+      revenueStreams: [
+        'Annual SaaS subscriptions for property reputation, survey management, and ResponseAI tools',
+        'Enterprise multi-property software licensing for international hotel chains and management groups',
+        'Structured Meta-Review API data licensing for online travel aggregators and booking engines',
+      ],
+      pricingStructure: 'Tiered subscription packages starting with core review management, scaling to comprehensive CXP packages with ResponseAI and custom enterprise contracts.',
+    },
+    marketIntel: {
+      marketShare: '~28% Category Leader in Hospitality Review Aggregation',
+      companySharePercent: 28,
+      marketPosition: 'Global Category Leader in Hospitality Review Intelligence',
+      competitors: [
+        {
+          name: 'ReviewPro (Shiji Group)',
+          website: 'https://www.reviewpro.com',
+          marketShare: '~25% Direct Competitor',
+          sharePercent: 25,
+          focusDifference: 'Part of Shiji Group with a strong focus on enterprise guest experience management and hotel CRM integration.',
+        },
+        {
+          name: 'Revinate',
+          website: 'https://www.revinate.com',
+          marketShare: '~22% Direct Competitor',
+          sharePercent: 22,
+          focusDifference: 'Combines guest feedback with advanced hotel email marketing automation and unified guest data platforms.',
+        },
+        {
+          name: 'Medallia',
+          website: 'https://www.medallia.com',
+          marketShare: '~15% Enterprise Incumbent',
+          sharePercent: 15,
+          focusDifference: 'Broad enterprise experience management platform serving Fortune 500 brands across hospitality, retail, and banking.',
+        },
+      ],
+      otherMarketShare: {
+        percentage: '~10% Combined Share',
+        sharePercent: 10,
+        description: 'Regional hospitality reputation tools and specialized local survey vendors including GuestRevu and Customer Alliance.',
+      },
+    },
+    sources: [
+      { title: 'TrustYou Official Website & Solutions Portal', url: 'https://www.trustyou.com' },
+      { title: 'HospitalityNet Industry Profile & Case Studies', url: 'https://www.hospitalitynet.org' },
+      { title: 'Skift Hospitality Technology Analysis', url: 'https://skift.com' },
+    ],
+  },
+  'microsoft.com': {
+    companyName: 'Microsoft',
+    website: 'https://www.microsoft.com',
+    simpleExplanation: 'Microsoft is an American multinational technology corporation that creates software, hardware, services, and cloud solutions. The company is best known for the Windows operating system, Microsoft 365 productivity suite, Xbox video gaming brand, Azure cloud computing platform, and its enterprise AI innovations with Microsoft Copilot.',
+    websiteAnalysis: {
+      url: 'https://www.microsoft.com',
+      headline: 'Empowering every person and every organization on the planet to achieve more.',
+      summary: 'The official platform highlights Microsoft Copilot, enterprise AI cloud transformations on Azure, Surface hardware innovations, and secure Windows productivity ecosystems for modern hybrid work.',
+      keyHighlights: [
+        'Microsoft Copilot generative AI assistant integrated natively across Microsoft 365 apps and Windows',
+        'Microsoft Azure hyperscale cloud computing platform providing AI infrastructure and hybrid cloud computing',
+        'Enterprise cybersecurity and identity protection solutions securing organizations across cloud environments',
+      ],
+    },
+    products: [
+      {
+        name: 'Microsoft Azure',
+        description: 'Global hyperscale cloud computing platform delivering virtual computing, scalable databases, AI model hosting, and developer tools for enterprise workloads.',
+      },
+      {
+        name: 'Microsoft 365 & Office Suite',
+        description: 'Cloud-based productivity and collaboration ecosystem including Word, Excel, PowerPoint, Teams, SharePoint, and Outlook with embedded Copilot AI features.',
+      },
+      {
+        name: 'Windows Operating System',
+        description: 'Worldwide desktop and workstation operating system powering personal computers, enterprise fleets, and virtualization environments.',
+      },
+      {
+        name: 'Microsoft Copilot & Business Applications',
+        description: 'Enterprise AI copilots and Dynamics 365 enterprise resource planning and customer relationship management software.',
+      },
+    ],
+    clientProfiles: [
+      {
+        targetSegment: 'Commercial Enterprises & Corporate Organizations',
+        description: 'Global enterprises, multinational companies, and IT departments relying on Azure cloud architecture, Microsoft 365 productivity tools, and Active Directory security.',
+        examples: ['Fortune 500 corporations', 'Financial services institutions', 'Global consulting and manufacturing firms'],
+      },
+      {
+        targetSegment: 'Software Developers, Cloud Architects & ISVs',
+        description: 'Engineering teams, independent software vendors, and startups building, deploying, and scaling modern web and cloud applications using Azure, GitHub, and Visual Studio.',
+        examples: ['Enterprise software vendors', 'Cloud-native startups', 'Independent app developers'],
+      },
+      {
+        targetSegment: 'Public Sector, Healthcare & Educational Institutions',
+        description: 'Government agencies, defense bodies, school districts, universities, and healthcare systems requiring secure, compliant cloud communication, Teams collaboration, and data governance.',
+        examples: ['Federal and municipal governments', 'Public universities and schools', 'Hospital health networks'],
+      },
+    ],
+    vitals: {
+      createdYear: '1975 (Founded in Albuquerque, New Mexico by Bill Gates and Paul Allen)',
+      employeeCount: '~228,000 employees globally',
+      headquarters: 'Redmond, Washington, USA',
+    },
+    monetization: {
+      summary: 'Microsoft monetizes across three core segments: Intelligent Cloud (Azure consumption and enterprise server products), Productivity and Business Processes (commercial and consumer Office 365 subscriptions and LinkedIn), and More Personal Computing (Windows OEM licensing, Xbox gaming hardware and Game Pass subscriptions, and Surface devices).',
+      modelType: 'Hybrid Cloud SaaS, Enterprise Licensing, and Digital Subscriptions',
+      revenueStreams: [
+        'Azure cloud compute, storage, and AI consumption fees',
+        'Commercial and consumer recurring software subscriptions for Microsoft 365',
+        'Enterprise server licensing and client access licenses',
+        'Windows OEM licensing sold to computer manufacturers',
+        'Xbox video gaming hardware, first-party games, and Xbox Game Pass subscriptions',
+      ],
+      pricingStructure: 'Multi-year enterprise volume licensing agreements (Enterprise Agreements), per-user monthly SaaS subscriptions, and pay-as-you-go cloud resource consumption tiering.',
+    },
+    marketIntel: {
+      marketShare: '~24% Global Cloud Infrastructure Market Share (Azure) and ~70% Desktop OS Market Share (Windows)',
+      companySharePercent: 24,
+      marketPosition: 'Global Technology Giant and Hyperscale Cloud Leader',
+      competitors: [
+        {
+          name: 'Amazon Web Services (AWS)',
+          website: 'https://aws.amazon.com',
+          marketShare: '~31% Cloud Infrastructure Leader',
+          sharePercent: 31,
+          focusDifference: 'Pioneer and global market share leader in public cloud infrastructure and developer-focused cloud services.',
+        },
+        {
+          name: 'Google Cloud (Alphabet)',
+          website: 'https://cloud.google.com',
+          marketShare: '~11% Hyperscale Cloud Challenger',
+          sharePercent: 11,
+          focusDifference: 'Hyperscale cloud platform competing with specialized strengths in data analytics, Kubernetes, and machine learning infrastructure.',
+        },
+        {
+          name: 'Apple',
+          website: 'https://apple.com',
+          marketShare: '~18% Personal Computing and OS Competitor',
+          sharePercent: 18,
+          focusDifference: 'Competes directly in personal computing hardware, macOS desktop systems, mobile devices, and consumer cloud ecosystems.',
+        },
+      ],
+      otherMarketShare: {
+        percentage: '~34% Combined Share',
+        sharePercent: 34,
+        description: 'Regional and specialized cloud providers including Alibaba Cloud, Oracle Cloud Infrastructure, and IBM Cloud.',
+      },
+    },
+    sources: [
+      { title: 'Microsoft Investor Relations & Annual SEC 10-K Filings', url: 'https://www.microsoft.com/investor' },
+      { title: 'Microsoft Official Corporate Platform', url: 'https://www.microsoft.com' },
+      { title: 'Synergy Research Group Cloud Market Share Reports', url: 'https://www.srgresearch.com' },
+    ],
+  },
 };
 
 BENCHMARK_SUMMARIES['siemens.com'] = BENCHMARK_SUMMARIES['siemens'];
@@ -1242,3 +1480,5 @@ BENCHMARK_SUMMARIES['spotify.com'] = BENCHMARK_SUMMARIES['spotify'];
 BENCHMARK_SUMMARIES['sap.com'] = BENCHMARK_SUMMARIES['sap'];
 BENCHMARK_SUMMARIES['notion.so'] = BENCHMARK_SUMMARIES['notion'];
 BENCHMARK_SUMMARIES['dell'] = BENCHMARK_SUMMARIES['dell.com'];
+BENCHMARK_SUMMARIES['trustyou'] = BENCHMARK_SUMMARIES['trustyou.com'];
+BENCHMARK_SUMMARIES['microsoft'] = BENCHMARK_SUMMARIES['microsoft.com'];

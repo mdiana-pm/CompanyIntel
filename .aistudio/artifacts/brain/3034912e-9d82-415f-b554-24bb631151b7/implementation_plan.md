@@ -1,67 +1,90 @@
-# Search Precision & Typo Matching Calibration
+# Microsoft Search Precision & Bot-Defense Shielding
 
-Refine company search and typing suggestions to eliminate false-positive matches (such as showing Stripe and Siemens when typing "me") by raising the suggestion threshold to a minimum of 3 characters, enforcing prefix and word-boundary matching, and calibrating Levenshtein edit tolerance.
+Resolve the issue where searching for "microsoft.com" incorrectly displays Dell Technologies and Apple by removing domain extensions from tokenized search keywords, preventing ".com" from matching "computers" and "computer", and adding a verified Microsoft benchmark profile with automated WAF bot-block filtering.
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> Based on your clarifying answers, we have confirmed:
-> 1. **Minimum Character Threshold**: Suggestions will only trigger when at least 3 characters are typed (e.g. typing 1 or 2 characters like `me` will not pop up false suggestions).
-> 2. **Elimination of Loose Substring Matching**: Secondary alias words (such as `"payments"` in `"stripe payments"` or internal syllable `"me"` in `"siemens"`) will never trigger matches for unrelated queries.
-> 3. **Testing Flow**: The matching logic is calibrated so genuine typos (e.g. `siemen` for Siemens, `strip` for Stripe, `spotifi` for Spotify, `notn` for Notion) continue to match accurately, while short general prefixes require intentional typing.
+> **Summary of Investigation**:
+> 1. **Why Dell & Apple Appeared**: When searching `microsoft.com`, punctuation is replaced with spaces, splitting the input into `["microsoft", "com"]`. Because `"com"` has 3 letters, it was evaluated as an independent search word. Dell has aliases including `"computers"` and `"dell computers"`, while Apple has `"apple computer"`. Since both contain words starting with `"com"`, the algorithm matched Microsoft, Dell, and Apple together, triggering the multi-entity selector.
+> 2. **Why It Showed "Your request has been blocked" on Selection**: Selecting Microsoft made a live scrape request to `microsoft.com`. Microsoft's Akamai/Azure Web Application Firewall flagged the datacenter request as automated traffic and served a block page with HTTP 200 containing `<title>Your request has been blocked. This could be due to several reasons.</title>`.
 
-- **Confirmed Decision 1**: Set minimum length for live suggestions and similarity candidate proposals to $\ge 3$ characters.
-- **Confirmed Decision 2**: Strict prefix and token boundary matching on primary company names and aliases; prevent arbitrary middle-of-word substring matching.
-- **Confirmed Decision 3**: Scale Levenshtein edit distance strictly with input length (0 edits for length $< 4$, max 1 edit for length $4–6$, max 2 edits for length $\ge 7$).
+- **Confirmed Decision 1**: Strip top-level domain extensions (`.com`, `.net`, `.org`, `.io`, `.ai`, `.co`, `.de`, `.uk`, etc.) before splitting queries into keyword tokens, and blacklist TLD strings from prefix matching.
+- **Confirmed Decision 2**: When a search resolves to a single verified company (e.g. `microsoft.com` resolving to Microsoft), bypass the multi-entity selection screen and open the executive report immediately.
+- **Confirmed Decision 3**: Add Microsoft (`microsoft.com`) to `BENCHMARK_SUMMARIES` and `ALL_COMPANY_CANDIDATES` with verified data (Azure, Microsoft 365, Windows, Copilot AI), ensuring instant, reliable loading without triggering firewall bot blocks.
+- **Confirmed Decision 4**: Add an automated WAF blocker detector in the live scraper to detect titles like *"Your request has been blocked"*, *"Access Denied"*, or *"Security Check"* and fall back to Wikipedia and clean corporate data.
 
 ---
 
 ## 1. Overview & Core Concept
 
-### What Caused the Issue
-When typing `me`:
-- `"me"` was evaluated by `cleanAlias.includes(q)`.
-- **Siemens** contains `"me"` (`sie-me-ns`).
-- **Stripe** has the alias `"stripe payments"`, which contains `"me"` (`pay-me-nts`).
-- **Square** has the alias `"square payments"`, which also contains `"me"`.
-Because the query was only 2 letters, checking whether `"me"` exists anywhere inside any alias caused Stripe, Siemens, and Square to falsely appear.
+### Root Cause Analysis
 
-### Solution
-1. **Require Minimum 3 Characters**: Neither the live suggestion dropdown nor the backend fuzzy proposal will activate for 1 or 2 character inputs.
-2. **Anchor Matching to Word Starts**: When checking aliases, queries must match the start of the company name or the start of a constituent word (e.g., `str` matches `stripe`, `mer` matches `mercury`, `sie` matches `siemens`), not arbitrary characters buried inside other words.
-3. **Calibrated Levenshtein Distance**:
-   - Length $1–3$: exact prefix match only (0 distance).
-   - Length $4–6$: maximum 1 character typo/edit allowed (e.g., `notn` $\rightarrow$ Notion, `strip` $\rightarrow$ Stripe, `spoti` $\rightarrow$ Spotify).
-   - Length $\ge 7$: maximum 2 character edits allowed (e.g., `siemen` $\rightarrow$ Siemens, `spotifi` $\rightarrow$ Spotify).
+```
+User Input: "microsoft.com"
+          │
+          ▼
+   Split on punctuation: ["microsoft", "com"]
+          │
+          ├────────────────────────────────┬────────────────────────────────┐
+          ▼                                ▼                                ▼
+Token: "microsoft"                  Token: "com"                     Token: "com"
+Matches: Microsoft (1975)           Starts with "com":               Starts with "com":
+                                    "dell computers" (Dell)          "apple computer" (Apple)
+                                    "computers monitors..." (Dell)
+          │                                │                                │
+          └────────────────────────────────┴────────────────────────────────┘
+                                           │
+                                           ▼
+                     Matches Found: [Microsoft, Dell, Apple]
+                                           │
+                                           ▼
+           Triggered: "Which company would you like to research?"
+```
+
+### The Solution
+
+1. **Domain Extension Sanitation**:
+   - Sanitize the input by removing known TLD extensions (`.com`, `.org`, `.net`, `.io`, `.ai`, `.co`, `.de`, etc.) before tokenizing into words.
+   - Filter out standalone TLD strings (`com`, `org`, `net`, `gov`, `edu`, `io`, `ai`, `app`, `dev`, `co`, `uk`, `de`, `eu`) from `rawWords` so domain extensions can never act as independent 3-letter prefix search terms.
+2. **Direct Report Display**:
+   - Searching `microsoft.com` will only produce the search token `"microsoft"`.
+   - Matching returns strictly one entity (`Microsoft`), immediately presenting the verified executive intelligence report without asking *"Did you mean?"* or *"Which company would you like to research?"*.
+3. **Verified Microsoft Benchmark Intelligence**:
+   - Integrate Microsoft into `BENCHMARK_SUMMARIES` and `ALL_COMPANY_CANDIDATES` with verified data across products, client profiles, monetization, vitals, and market share. Strictly zero semicolons.
+4. **WAF Bot-Defense Detection**:
+   - If an external website returns a page containing firewall block signatures (e.g. Akamai, Cloudflare, CloudFront, Imperva challenge titles), the backend scraper automatically rejects the blocked headline and uses verified knowledge graph and Wikipedia data.
 
 ---
 
 ## 2. User Experience & Visual Design
 
-### Live Search Input Flow
+### Clean Single-Match Search Flow
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 🔍  Enter Company Name or Website                            │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │  mer                                                  ✕ │ │
-│ └─────────────────────────────────────────────────────────┘ │
+│ 🔍  microsoft.com                                         ✕ │ [ Research ]
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼ (Direct single-match bypass)
+┌─────────────────────────────────────────────────────────────┐
+│ [MS] Microsoft (microsoft.com)                              │
+│      Cloud Computing, Enterprise Software & AI · Redmond    │
 │                                                             │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │ ✨ MATCHING COMPANIES (CONFIRM TO RESEARCH)              │ │
-│ │ ┌─────────────────────────────────────────────────────┐ │ │
-│ │ │ [ME] Mercury (mercury.com)              [Confirm →] │ │ │
-│ │ │      Fintech & Startup Banking · San Francisco      │ │ │
-│ │ ├─────────────────────────────────────────────────────┤ │ │
-│ │ │ [MM] Mercury Marine (mercurymarine.com) [Confirm →] │ │ │
-│ │ │      Marine Propulsion & Outboard Motors · WI, USA  │ │ │
-│ │ └─────────────────────────────────────────────────────┘ │ │
-│ └─────────────────────────────────────────────────────────┘ │
+│ ┌───────────────┐ ┌───────────────────┐ ┌─────────────────┐ │
+│ │ WHEN CREATED  │ │ NUMBER EMPLOYEES  │ │ HEADQUARTERS    │ │
+│ │ 1975          │ │ ~228,000          │ │ Redmond, WA     │ │
+│ └───────────────┘ └───────────────────┘ └─────────────────┘ │
+│                                                             │
+│ ◆ WHAT THE COMPANY DOES                                     │
+│ Global technology leader empowering people and organizations │
+│ through intelligent cloud platforms, enterprise software,    │
+│ personal computing hardware, and generative AI innovations. │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-- **Typing 1–2 characters (e.g. `me`, `si`)**: No dropdown appears. The user can type cleanly without intrusive false positives.
-- **Typing 3+ characters (e.g. `mer`, `sie`, `str`, `spo`)**: Dropdown activates showing only companies whose names, domains, or aliases genuinely match.
-- **Submitting with a typo (e.g. `siemen`, `strip`, `spotifi`)**: Opens the dedicated confirmation screen: *"Did you mean Siemens?"* with full vitals and executive overview before running full research.
+- **No False Disambiguation**: Neither Dell nor Apple appears when typing `microsoft.com`.
+- **No Block Page Title**: The header displays *"Microsoft"* with badge `"MS"` instead of *"Your request has been blocked"* with `"YO"`.
+- **Immediate Value**: Loads the full verified executive intelligence report in a single step.
 
 ---
 
@@ -69,37 +92,45 @@ Because the query was only 2 letters, checking whether `"me"` exists anywhere in
 
 | Decision | Chosen Approach | Rationale |
 |---|---|---|
-| **Suggestion Trigger** | $\ge 3$ characters | Eliminates false positives from 2-letter combos like `me`, `st`, `in`. |
-| **Substring Rule** | Prefix & word-boundary only | Prevents matching `payments` or internal syllables of other companies. |
-| **Typo Tolerance** | Proportional Levenshtein | Prevents 2-letter queries from matching random 5-letter companies while protecting legitimate typos like `siemen` and `spotifi`. |
+| **Domain Extension Handling** | Strip TLDs before tokenizing + blacklist TLDs from prefix matching | Stops `.com` from behaving as an independent search word while preserving full domain matching for exact queries like `heospace.com` or `dell.com`. |
+| **Microsoft Grounding** | Add complete benchmark profile in `BENCHMARK_SUMMARIES` | Prevents Akamai/Azure WAF bot-challenge blocks from ever affecting Microsoft searches and ensures instant response times. |
+| **WAF Block Filter** | Reject titles matching known bot-challenge strings | Protects against future scrapes of enterprise websites that return HTTP 200 with block-screen titles. |
 
 ---
 
 ## 4. Technical Architecture & Data Strategy
 
-### Matching Logic Flow Diagram
+### System Flow Diagram
 ```
-User Search Input (Query)
-          │
-          ▼
-   Length >= 3 ?
-      │         │
-     No        Yes
-      │         ▼
-   (No popup)  Tokenize & Normalize Query
-                │
-                ├─► Exact Prefix Match (e.g. "mer" -> "mercury")
-                ├─► Word Boundary Prefix (e.g. "xcel" -> "siemens xcelerator")
-                └─► Proportional Levenshtein Distance
-                      ├─ Len 3: exact only
-                      ├─ Len 4-6: max edit distance 1 (e.g. "notn", "strip")
-                      └─ Len 7+: max edit distance 2 (e.g. "siemen", "spotifi")
-                │
-                ▼
-      Ranked Candidates (Max 5, zero false positives)
+                     User Search Input
+                            │
+                            ▼
+              Strip Domain Extensions (TLDs)
+               ("microsoft.com" -> "microsoft")
+                            │
+                            ▼
+              Extract Normalized Keyword Tokens
+                    Tokens: ["microsoft"]
+                            │
+                            ▼
+               Search ALL_COMPANY_CANDIDATES
+                            │
+                 ┌──────────┴──────────┐
+                 │                     │
+          Single Match           Multiple Matches
+          (1 candidate)           (2+ candidates)
+                 │                     │
+                 ▼                     ▼
+         Display Executive    Show Disambiguation Selector
+          Report Directly      "Which company would you like
+          (e.g. Microsoft)             to research?"
 ```
 
 ### Components to Update
-- `src/data/benchmarks.ts`: Update `findSimilarCompanies(query: string)` with $\ge 3$ character threshold, word boundary matching, and proportional edit distance.
-- `server.ts`: Align `/api/company-intel` similarity matching with the calibrated $\ge 3$ length threshold.
-- `src/App.tsx`: Update `liveSuggestions` filter condition to require `searchInput.trim().length >= 3`.
+1. `src/data/benchmarks.ts`:
+   - In `findSimilarCompanies`: Strip TLD extensions before splitting `rawWords`; filter out TLD stop-words (`com`, `net`, `org`, `io`, `ai`, `de`, `uk`, etc.).
+   - Add `microsoft.com` candidate item to `ALL_COMPANY_CANDIDATES` with aliases (`microsoft`, `microsoft corporation`, `msft`, `microsoft.com`).
+   - Add comprehensive `BENCHMARK_SUMMARIES['microsoft.com']` and `BENCHMARK_SUMMARIES['microsoft']`.
+2. `server.ts`:
+   - Add `microsoft`, `microsoftcom`, `msft` to `BENCHMARK_ALIASES` and whitelist.
+   - In `buildReportFromScrapedData`: Add check for bot-block title patterns (`blocked`, `access denied`, `cloudflare`, `akamai`, `captcha`) to prevent saving firewall block text as company names.
