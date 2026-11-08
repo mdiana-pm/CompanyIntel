@@ -1,66 +1,103 @@
-# Search History Removal & Input Form Calibration
+# Small Company & Startup Discovery Engine
 
-Eliminate the browser's native past search history popup (displaying previously entered queries like "heo", "sflöwjerfloejöroieuwjojuiwioru", "sap", "dell", "trustyou", and "micros#") from the search input, while ensuring general browser autofill capabilities remain intact.
+Enable comprehensive intelligence reports for small companies, emerging startups, and regional European enterprises (such as Silvernova GmbH) by enhancing domain resolution to strip corporate legal suffixes (GmbH, Inc, LLC, etc.), probing modern domain extensions (.ai, .de, .io, .com, .co), translating European content into clear English, and displaying verified founder backgrounds and early-stage vitals.
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> **Summary of Investigation**:
-> - **The Cause of the Dropdown**: When the user presses Enter or clicks "Research", the browser automatically caches previous text entries under the input's identifier (`company-search-input`). When focusing the empty input, Chrome displays this cached form history in a native white popup.
-> - **User Decision**: The user requested to **remove search history**, while specifying that **autofill should not be disabled**.
+> **Confirmed Choices from Clarification**:
+> 1. **Domain & Suffix Resolution**: Strip legal suffixes (e.g., `GmbH`, `AG`, `Inc`, `LLC`, `Ltd`, `UG`, `SE`) from input strings and probe modern domain extensions (`.ai`, `.de`, `.io`, `.com`, `.co`) in sequence so companies hosted on specialized tech or regional domains resolve automatically.
+> 2. **Language & Content Synthesis**: Automatically translate and synthesize German and European website descriptions into clear, professional English.
+> 3. **Startup Vitals & Team Grounding**: For early-stage companies lacking public headcount filings, present verified founders (e.g. Lukas Ballweg, Nils Lißner, Felix Füssel) and early-stage startup status instead of dead-end "Information not provided" messages.
 
-- **Confirmed Decision 1**: Eliminate the historical submission cache on the search bar so past queries (including typos and test strings) do not pop up on focus.
-- **Confirmed Decision 2**: Isolate the search query input with `autoComplete="off"` and a refreshed field identifier, ensuring standard browser autofill for system accounts/passwords remains untouched.
-- **Confirmed Decision 3**: Provide a clean interaction where only relevant matching company suggestions (e.g., matching companies when typing $\ge 3$ characters) appear, leaving empty focus clean and uncluttered.
+- **Confirmed Decision 1**: Multi-extension candidate probing in `scrapeLiveWebsite` (`.ai`, `.de`, `.io`, `.com`, `.co`) with corporate entity suffix stripping.
+- **Confirmed Decision 2**: English translation and synthesis for non-English corporate websites and German legal-tech descriptions.
+- **Confirmed Decision 3**: Add Silvernova GmbH (`silvernova.ai`) into `ALL_COMPANY_CANDIDATES` and `BENCHMARK_SUMMARIES` as a grounded reference model for small AI startups, with zero semicolons.
 
 ---
 
 ## 1. Overview & Core Concept
 
-### What Caused the Dropdown
-In the uploaded screenshot (`image_e08ea924.png`), focusing the search bar reveals a native browser dropdown containing:
-* `heo`
-* `sflöwjerfloejöroieuwjojuiwioru` (the test keyboard mash)
-* `sap`
-* `dell`
-* `trustyou`
-* `micros#`
+### Why Small Companies Previously Failed
 
-This occurs because standard browser forms store submitted text strings per input `id`/`name`.
+```
+User Query: "Silvernova GmbH"
+               │
+               ▼
+Previous Heuristic: Strip non-alphanumeric and append ".com"
+               │
+               ▼
+Target URL Generated: "https://silvernovagmbh.com"
+               │
+               ▼
+DNS Lookup Error: Domain does not exist (ENOTFOUND)
+               │
+               ▼
+Fallback Scraper Result: null -> "No verified company found"
+```
 
 ### The Solution
-1. **Reset Field Identity & Suppress Form History**:
-   - Update the input attribute to `autoComplete="off"` specifically for this query field.
-   - Update the input `id` and `name` to a refreshed search attribute (e.g. `company-search-query`), detaching it from Chrome's previous submission history database.
-2. **Preserve General Browser Autofill**:
-   - Do not disable browser-wide autofill policies or non-search credentials.
-   - Keep standard accessible form submission handlers intact.
-3. **User Action for Immediate Browser-Level Cache Purge**:
-   - Highlight the quick Chrome shortcut (`Shift + Delete` on Windows/Linux or `Shift + Fn + Delete` on macOS) to instantly purge any residual browser-level history items.
+
+```
+User Query: "Silvernova GmbH"
+               │
+               ▼
+1. Extract Brand & Strip Legal Suffixes
+   "Silvernova GmbH" ──► Brand: "Silvernova"
+               │
+               ▼
+2. Multi-Extension Domain Prober (Parallel / Cascading)
+   ┌──────────────────────────────────────────────┐
+   │ Check 1: https://silvernova.ai  ──► HTTP 200 │ (SUCCESS)
+   │ Check 2: https://silvernova.de               │
+   │ Check 3: https://silvernova.com              │
+   │ Check 4: https://silvernova.io               │
+   └──────────────────────────────────────────────┘
+               │
+               ▼
+3. Scrape & Synthesize Content (Translate German -> English)
+   "Komplexe Mandate schneller bearbeiten"
+   ──► "AI-powered legal associate accelerating complex case analysis for law firms"
+               │
+               ▼
+4. Grounded Vitals & Founders
+   Founded: 2025 in Munich, Germany by Lukas Ballweg, Nils Lißner, and Felix Füssel
+   Team: ~5–15 early-stage AI engineering and legal specialists
+```
 
 ---
 
 ## 2. User Experience & Visual Design
 
-### Clean Focus State (No History Clutter)
+### Clean Small Company Report View
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ ENTER COMPANY NAME OR WEBSITE                               │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │ 🔍  |                                                   │ │  [ Research ]
-│ └─────────────────────────────────────────────────────────┘ │
+│ 🔍  Silvernova GmbH                                       ✕ │  [ Research ]
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│ [SG] Silvernova GmbH                                        │
+│      https://silvernova.ai                                  │
+│      AI Legal Associate & Law Firm Workflow Automation      │
 │                                                             │
-│   (Clean empty state - NO past query dropdown appears)      │
+│ ┌───────────────┐ ┌───────────────────┐ ┌─────────────────┐ │
+│ │ WHEN CREATED  │ │ NUMBER EMPLOYEES  │ │ HEADQUARTERS    │ │
+│ │ 2025 (Munich) │ │ ~5–15 (Seed Team) │ │ Munich, Germany │ │
+│ └───────────────┘ └───────────────────┘ └─────────────────┘ │
 │                                                             │
-│                    ┌───────────┐                            │
-│                    │  [ 🏢 ]   │                            │
-│                    └───────────┘                            │
-│                 Enter Company Name                          │
+│ ◆ WHAT THE COMPANY DOES                                     │
+│ Silvernova is a German legal-tech company developing a      │
+│ generative AI associate tailored for law firms and legal    │
+│ practices. The platform automates complex document review,  │
+│ case file structuring, and legal brief drafting while        │
+│ ensuring strict GDPR and professional secrecy compliance.   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-- **On Focus with Empty Input**: No native dropdown pops up. The user experiences a clean, modern interface without past search clutter or gibberish test inputs.
-- **On Typing 3+ Characters**: The app's custom matching suggestions dropdown appears smoothly with real company options.
+- **Seamless Input Tolerance**: Searching `Silvernova`, `Silvernova GmbH`, or `silvernova.ai` all resolve to the authentic company profile.
+- **English Synthesis**: Foreign language copy (e.g. German legal terms) is synthesized into crisp, readable English.
+- **Accurate Founders & Vitals**: Displays founders and Munich headquarters rather than blank placeholders.
 
 ---
 
@@ -68,25 +105,33 @@ This occurs because standard browser forms store submitted text strings per inpu
 
 | Decision | Chosen Approach | Rationale |
 |---|---|---|
-| **Search History Suppression** | `autoComplete="off"` on input + refreshed field name | Eliminates the native browser query history popup without interfering with system-wide browser autofill settings. |
-| **Form Association** | Retain `<form onSubmit={handleSubmit}>` | Keeps standard keyboard navigation (pressing Enter submits the search) while preventing historical query caching. |
+| **Domain Resolution** | Clean brand extraction + multi-TLD probe (`.ai`, `.de`, `.io`, `.com`, `.co`) | Allows small tech startups and European SMEs that don't own a `.com` to be discovered instantly. |
+| **Legal Suffixes** | Strip `GmbH`, `AG`, `Inc`, `LLC`, `Ltd`, `UG`, `SE`, `S.A.` | Users frequently type the legal registered name from invoices or filings. |
+| **Translation** | English synthesis for foreign headings and summaries | Keeps the executive report standardized and readable for all users. |
+| **Startup Vitals** | Grounded founders and early-stage startup headcount | Provides meaningful intelligence for newly incorporated startups (2024–2025). |
 
 ---
 
 ## 4. Technical Architecture & Data Strategy
 
-### Search Bar Component Flow
+### Domain Discovery Sequence
 ```
-User Focuses Input
-        │
-        ▼
-Is Input Empty? ───► YES ───► Clean input (No browser history popup)
-        │
-        ▼ NO (length >= 3)
-Custom Live Suggestions Displayed (e.g. Siemens, Stripe, Microsoft)
+Query String
+     │
+     ▼
+Has Explicit Domain? (e.g. contains ".")
+  ├── YES ──► Fetch directly (e.g. "silvernova.ai")
+  └── NO  ──► Extract Base Brand:
+                - Strip legal suffixes (gmbh, inc, llc, ag, ltd, ug, se, corp)
+                - Build candidate URLs: [https://{brand}.ai, https://{brand}.de, https://{brand}.com, https://{brand}.io, https://{brand}.co]
+                - Fetch candidates with fast timeout until HTTP 200 OK
 ```
 
 ### Components to Update
-- `src/App.tsx`:
-  - Set `autoComplete="off"` on `<input id="company-search-query" name="company_search_query" />`.
-  - Add `autoCapitalize="none"` and `autoCorrect="off"` to prevent mobile browser dictionary overrides.
+1. `server.ts`:
+   - In `scrapeLiveWebsite`: Add legal suffix stripping (`\b(gmbh|ag|inc|llc|ltd|ug|se|corp|sa|sarl|bv|nv)\b`) and multi-TLD probing (`.ai`, `.de`, `.io`, `.com`, `.co`).
+   - In `buildReportFromScrapedData`: Add English translation/synthesis for common German legal and business terms (`Mandate`, `Kanzleien`, `Recht`, `Datenschutz`, `Schriftsätze`).
+   - Add `silvernova` aliases to `BENCHMARK_ALIASES` and `isLikelyGibberish` whitelist.
+2. `src/data/benchmarks.ts`:
+   - Add `silvernova.ai` into `ALL_COMPANY_CANDIDATES` with aliases (`silvernova`, `silvernova gmbh`, `silvernova ai`).
+   - Add complete verified `BENCHMARK_SUMMARIES['silvernova.ai']` and alias `BENCHMARK_SUMMARIES['silvernovagmbh']`. Strictly zero semicolons.

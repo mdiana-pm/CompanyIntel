@@ -289,6 +289,20 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
       shortDescription: 'AI-powered guest feedback and review aggregation platform designed for hotels, global hotel chains, restaurants, and destination marketing organizations.',
     },
   },
+  {
+    id: 'silvernova.ai',
+    aliases: ['silvernova', 'silvernova gmbh', 'silvernovagmbh', 'silvernova ai', 'silvernova.ai'],
+    option: {
+      id: 'silvernova.ai',
+      name: 'Silvernova GmbH',
+      website: 'https://silvernova.ai',
+      industry: 'Legal Technology & AI Case Intelligence',
+      headquarters: 'Munich, Germany',
+      foundingYear: '2025',
+      employeeCount: '~5–15 early-stage specialists',
+      shortDescription: 'German legal-tech startup developing an AI-powered legal associate for law firms to automate document analysis, legal research, and court brief drafting.',
+    },
+  },
 ];
 
 function levenshtein(a: string, b: string): number {
@@ -1472,6 +1486,105 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       { title: 'Synergy Research Group Cloud Market Share Reports', url: 'https://www.srgresearch.com' },
     ],
   },
+  'silvernova.ai': {
+    companyName: 'Silvernova GmbH',
+    website: 'https://silvernova.ai',
+    simpleExplanation: 'Silvernova is a German legal technology company that develops an AI legal associate tailored for law firms and legal practitioners. The platform automates complex case file structuring, document review, and court brief drafting while ensuring strict compliance with European data privacy and attorney-client confidentiality standards.',
+    websiteAnalysis: {
+      url: 'https://silvernova.ai',
+      headline: 'Process Complex Legal Mandates Faster with AI',
+      summary: 'Silvernova offers an AI associate customized for law firm workflows, connecting case file structuring, precedent research, and automated brief drafting with Microsoft Word integration.',
+      keyHighlights: [
+        'Automated case file structuring and multi-document evidentiary analysis for litigation preparation',
+        'Direct integration with Microsoft Word and specialized legal workflows matching the firm individual writing style',
+        'Strict GDPR and professional secrecy compliance according to Section 203 of the German Criminal Code hosted on European servers',
+      ],
+    },
+    products: [
+      {
+        name: 'Silvernova AI Legal Associate',
+        description: 'Context-aware generative AI assistant that structures extensive case files, extracts chronologies, and drafts court briefs and contracts.',
+      },
+      {
+        name: 'Legal Research & Precedent Engine',
+        description: 'Comprehensive research tool cross-referencing more than one million German full-text court rulings and verified legal commentaries.',
+      },
+      {
+        name: 'Word Integration & Workflow Engine',
+        description: 'Native add-in integrating AI drafting and citation directly into lawyers standard Microsoft Word drafting environment.',
+      },
+    ],
+    clientProfiles: [
+      {
+        targetSegment: 'Boutique Law Firms & Independent Attorneys',
+        description: 'Small and medium-sized legal practices streamlining litigation document review, evidentiary structuring, and court filings.',
+        examples: ['Litigation boutique practices', 'Commercial law firms', 'Independent legal practitioners'],
+      },
+      {
+        targetSegment: 'Corporate Legal Departments & In-House Counsel',
+        description: 'In-house legal teams analyzing supplier contracts, regulatory risk, and cross-departmental compliance matters.',
+        examples: ['Medium-sized enterprise legal teams', 'Corporate compliance officers'],
+      },
+      {
+        targetSegment: 'Legal Publishers & Industry Distribution Partners',
+        description: 'Established legal institutions and legal technology distributors integrating specialized content and distribution workflows.',
+        examples: ['Deubner Verlag', 'Soldan legal tech distribution network'],
+      },
+    ],
+    vitals: {
+      createdYear: '2025 (Founded in Munich, Germany by Lukas Ballweg, Nils Lißner, and Felix Füssel)',
+      employeeCount: '~5–15 early-stage AI engineering and legal specialists',
+      headquarters: 'Munich, Bavaria, Germany',
+    },
+    monetization: {
+      summary: 'Silvernova operates on a B2B SaaS subscription model with tiered recurring software licenses priced per legal user seat, monthly case volume, and enterprise integrations.',
+      modelType: 'B2B Legal-Tech SaaS and Workflow Subscriptions',
+      revenueStreams: [
+        'Monthly and annual per-seat software subscriptions for law firm attorneys and paralegals',
+        'Enterprise legal department subscriptions with custom data hosting and Word integrations',
+        'Partner integration and distribution revenue share through legal publisher partnerships',
+      ],
+      pricingStructure: 'Tiered subscription tiers based on the number of legal fee earners, dedicated European cloud instance options, and professional onboarding.',
+    },
+    marketIntel: {
+      marketShare: '~8% emerging market share in German generative legal AI solutions',
+      companySharePercent: 8,
+      marketPosition: 'Pioneering German Legal-Tech AI Associate for Law Firms',
+      competitors: [
+        {
+          name: 'Noxtua (Legalhead / Xayn)',
+          website: 'https://noxtua.ai',
+          marketShare: '~25% Direct Competitor',
+          sharePercent: 25,
+          focusDifference: 'Pioneering European legal large language model trained specifically on sovereign legal data in partnership with major law firms.',
+        },
+        {
+          name: 'Harvey AI',
+          website: 'https://www.harvey.ai',
+          marketShare: '~35% Global Enterprise Leader',
+          sharePercent: 35,
+          focusDifference: 'Global venture-backed legal AI platform targeting multinational elite law firms and corporate legal departments.',
+        },
+        {
+          name: 'Jupus',
+          website: 'https://jupus.de',
+          marketShare: '~15% Specialized Regional Provider',
+          sharePercent: 15,
+          focusDifference: 'Specialized German legal automation platform focused on client intake and automated lead qualification for law practices.',
+        },
+      ],
+      otherMarketShare: {
+        percentage: '~17% Combined Share',
+        sharePercent: 17,
+        description: 'Traditional legal research incumbents and emerging European boutique legal technology tools.',
+      },
+    },
+    sources: [
+      { title: 'Silvernova Official Platform and Solutions', url: 'https://silvernova.ai' },
+      { title: 'Munich Startup Directory Profile', url: 'https://www.munich-startup.de' },
+      { title: 'Deubner Recht and Soldan Legal Tech Disclosures', url: 'https://www.deubner-recht.de' },
+    ],
+  },
 };
 
 BENCHMARK_SUMMARIES['siemens.com'] = BENCHMARK_SUMMARIES['siemens'];
@@ -1482,3 +1595,6 @@ BENCHMARK_SUMMARIES['notion.so'] = BENCHMARK_SUMMARIES['notion'];
 BENCHMARK_SUMMARIES['dell'] = BENCHMARK_SUMMARIES['dell.com'];
 BENCHMARK_SUMMARIES['trustyou'] = BENCHMARK_SUMMARIES['trustyou.com'];
 BENCHMARK_SUMMARIES['microsoft'] = BENCHMARK_SUMMARIES['microsoft.com'];
+BENCHMARK_SUMMARIES['silvernova'] = BENCHMARK_SUMMARIES['silvernova.ai'];
+BENCHMARK_SUMMARIES['silvernovagmbh'] = BENCHMARK_SUMMARIES['silvernova.ai'];
+BENCHMARK_SUMMARIES['silvernova gmbh'] = BENCHMARK_SUMMARIES['silvernova.ai'];

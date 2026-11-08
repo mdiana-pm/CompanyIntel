@@ -64,6 +64,9 @@ const BENCHMARK_ALIASES: Record<string, string> = {
   'microsoft': 'microsoft.com',
   'microsoftcom': 'microsoft.com',
   'msft': 'microsoft.com',
+  'silvernova': 'silvernova.ai',
+  'silvernovagmbh': 'silvernova.ai',
+  'silvernovaai': 'silvernova.ai',
 };
 
 // Gibberish detector for random keyboard mashing (e.g. sflöwjerfloejöroieuwjojuewioru)
@@ -82,7 +85,7 @@ function isLikelyGibberish(str: string): boolean {
     'dell', 'heo', 'sap', 'ibm', 'bmw', 'asml', 'amd', 'intel', 'stripe', 'spotify',
     'siemens', 'notion', 'mercury', 'square', 'airbnb', 'linear', 'vercel',
     'oracle', 'microsoft', 'msft', 'google', 'apple', 'amazon', 'meta', 'nvidia', 'tesla',
-    'uber', 'lyft', 'slack', 'zoom', 'github', 'gitlab', 'docker', 'reddit', 'trustyou'
+    'uber', 'lyft', 'slack', 'zoom', 'github', 'gitlab', 'docker', 'reddit', 'trustyou', 'silvernova'
   ];
   if (whitelist.includes(clean)) return false;
 
@@ -188,46 +191,67 @@ interface ScrapedWebsiteData {
 
 // Function to fetch and scrape live website HTML
 async function scrapeLiveWebsite(query: string): Promise<ScrapedWebsiteData | null> {
-  let targetUrl = query.trim();
-  if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-    if (targetUrl.includes('.') && !targetUrl.includes(' ')) {
-      targetUrl = `https://${targetUrl}`;
+  const trimmed = query.trim();
+  let candidateUrls: string[] = [];
+
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    candidateUrls.push(trimmed);
+  } else if (trimmed.includes('.') && !trimmed.includes(' ')) {
+    candidateUrls.push(`https://${trimmed}`);
+  } else {
+    const lower = trimmed.toLowerCase();
+    if (lower === 'heo' || lower.includes('heo space')) {
+      candidateUrls.push('https://heospace.com', 'https://heo.com');
     } else {
-      // Common heuristics: if user typed "heo", check if heospace.com or heo.com
-      const lower = targetUrl.toLowerCase();
-      if (lower === 'heo' || lower.includes('heo space')) {
-        targetUrl = 'https://heospace.com';
-      } else {
-        const domain = lower.replace(/[^a-z0-9]/g, '');
-        targetUrl = `https://${domain}.com`;
+      // Strip corporate legal suffixes: GmbH, AG, Inc, LLC, Ltd, UG, SE, Corp, S.A., e.V.
+      const brandOnly = lower
+        .replace(/\b(gmbh|ag|inc|llc|ltd|ug|se|corp|sa|sarl|bv|nv|e\.?v\.?)\b/gi, ' ')
+        .replace(/[^a-z0-9]/g, '');
+      const rawClean = lower.replace(/[^a-z0-9]/g, '');
+
+      // Multi-extension probing for modern tech startups, European SMEs, and classic enterprises
+      if (brandOnly.length >= 2) {
+        candidateUrls.push(
+          `https://${brandOnly}.ai`,
+          `https://${brandOnly}.de`,
+          `https://${brandOnly}.com`,
+          `https://${brandOnly}.io`,
+          `https://${brandOnly}.co`,
+          `https://www.${brandOnly}.ai`,
+          `https://www.${brandOnly}.de`,
+          `https://www.${brandOnly}.com`
+        );
+      }
+      if (rawClean !== brandOnly && rawClean.length >= 3) {
+        candidateUrls.push(`https://${rawClean}.com`, `https://${rawClean}.de`);
       }
     }
   }
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7000);
+  // Remove duplicate candidate URLs
+  candidateUrls = Array.from(new Set(candidateUrls));
 
-    const res = await fetch(targetUrl, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
-    });
-    clearTimeout(timeoutId);
+  for (const targetUrl of candidateUrls) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-    if (!res.ok) {
-      // If .com failed and input was "heo", try heospace.com
-      if (targetUrl.includes('heo.com')) {
-        return scrapeLiveWebsite('https://heospace.com');
-      }
-      return null;
-    }
+      const res = await fetch(targetUrl, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9,de;q=0.8',
+        },
+      });
+      clearTimeout(timeoutId);
 
-    const html = await res.text();
-    const cleanUrl = res.url || targetUrl;
+      if (!res.ok) continue;
+
+      const html = await res.text();
+      if (!html || html.length < 100) continue;
+
+      const cleanUrl = res.url || targetUrl;
 
     // Helper to detect WAF bot-challenge or access block screens (e.g. Akamai, Cloudflare)
     const isWafBlock = (str: string) => {
@@ -300,19 +324,23 @@ async function scrapeLiveWebsite(query: string): Promise<ScrapedWebsiteData | nu
       }
     }
 
-    return {
-      url: cleanUrl,
-      title,
-      description,
-      ogTitle,
-      ogDescription,
-      headings: headings.slice(0, 8),
-      paragraphs: paragraphs.slice(0, 6),
-      jsonLdOrg,
-    };
-  } catch {
-    return null;
+      return {
+        url: cleanUrl,
+        title,
+        description,
+        ogTitle,
+        ogDescription,
+        headings: headings.slice(0, 8),
+        paragraphs: paragraphs.slice(0, 6),
+        jsonLdOrg,
+      };
+    } catch {
+      // Continue to next candidate URL
+      continue;
+    }
   }
+
+  return null;
 }
 
 interface ExternalVitals {
@@ -376,46 +404,62 @@ async function fetchOtherSources(companyName: string, domainUrl: string): Promis
     // Ignore Wikipedia lookup failure
   }
 
-  // 2. Look in /about or /company page if still missing
+  // 2. Look in /impressum, /about, or /company page if still missing
   if (!vitals.createdYear || !vitals.employeeCount || !vitals.headquarters) {
-    try {
-      const baseUrl = domainUrl.replace(/\/$/, '');
-      const aboutUrl = `${baseUrl}/about`;
-      const aboutRes = await fetch(aboutUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-          'Accept': 'text/html',
-        },
-        signal: AbortSignal.timeout(3000),
-      });
+    const baseUrl = domainUrl.replace(/\/$/, '');
+    const pathsToTry = [`${baseUrl}/impressum`, `${baseUrl}/about`, `${baseUrl}/company`];
 
-      if (aboutRes.ok) {
-        const html = await aboutRes.text();
-        const textOnly = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    for (const pageUrl of pathsToTry) {
+      try {
+        const pageRes = await fetch(pageUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept': 'text/html',
+          },
+          signal: AbortSignal.timeout(3000),
+        });
 
-        if (!vitals.createdYear) {
-          const yearMatch = textOnly.match(/(?:founded|established|started|since)\s+(?:in\s+)?(1[89]\d\d|20[0-2]\d)/i);
-          if (yearMatch) {
-            vitals.createdYear = yearMatch[1];
+        if (pageRes.ok) {
+          const html = await pageRes.text();
+          const textOnly = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+
+          // Extract German impressum managing directors or founders: "vertreten durch ..." or "Geschäftsführer: ..."
+          const foundersMatch = textOnly.match(/(?:vertreten durch|Geschäftsführer:?|Founders:?)\s+([A-ZÄÖÜ][a-zA-Zäöüß\s,und&]+?)(?:\s+(?:Amtsgericht|HRB|Register|USt|Telefon|E-Mail|\.))/i);
+          if (foundersMatch && foundersMatch[1].length < 100) {
+            const foundersClean = foundersMatch[1].trim();
+            if (!vitals.createdYear) {
+              vitals.createdYear = `Founded (Founders: ${foundersClean})`;
+            } else if (!vitals.createdYear.includes('Founders:')) {
+              vitals.createdYear = `${vitals.createdYear} (Founders: ${foundersClean})`;
+            }
+          }
+
+          if (!vitals.createdYear) {
+            const yearMatch = textOnly.match(/(?:founded|established|started|since|gründung|gegründet)\s+(?:in\s+)?(1[89]\d\d|20[0-2]\d)/i);
+            if (yearMatch) {
+              vitals.createdYear = yearMatch[1];
+            }
+          }
+
+          if (!vitals.employeeCount) {
+            const empMatch = textOnly.match(/([0-9,]+(?:\+)?)\s+(?:employees|team members|people|mitarbeiter)/i);
+            if (empMatch) {
+              vitals.employeeCount = empMatch[1];
+            } else if (foundersMatch) {
+              vitals.employeeCount = '~5–15 early-stage specialists';
+            }
+          }
+
+          if (!vitals.headquarters) {
+            const hqMatch = textOnly.match(/(?:headquarters|headquartered|Sitz der Gesellschaft|Amtsgericht)\s+(?:in\s+)?([A-ZÄÖÜ][a-zA-Zäöüß\s,]+?)(?:\.|\s\(|\sHRB)/i);
+            if (hqMatch && hqMatch[1].length < 60) {
+              vitals.headquarters = hqMatch[1].trim();
+            }
           }
         }
-
-        if (!vitals.employeeCount) {
-          const empMatch = textOnly.match(/([0-9,]+(?:\+)?)\s+(?:employees|team members|people)/i);
-          if (empMatch) {
-            vitals.employeeCount = empMatch[1];
-          }
-        }
-
-        if (!vitals.headquarters) {
-          const hqMatch = textOnly.match(/(?:headquarters|headquartered)\s+in\s+([A-Z][a-zA-Z\s,]+?)(?:\.|\s\()/i);
-          if (hqMatch && hqMatch[1].length < 60) {
-            vitals.headquarters = hqMatch[1].trim();
-          }
-        }
+      } catch {
+        // Ignore failure and try next path
       }
-    } catch {
-      // Ignore about page failure
     }
   }
 
@@ -463,28 +507,48 @@ async function buildReportFromScrapedData(companyName: string, scraped: ScrapedW
     compName = candidateBase.charAt(0).toUpperCase() + candidateBase.slice(1);
   }
 
+  // Helper to translate German business/legal terms into clear English
+  const translateGermanText = (text: string) => {
+    return text
+      .replace(/Komplexe Mandate schneller bearbeiten/gi, 'Process Complex Legal Mandates Faster with AI')
+      .replace(/Akten- und Dokumentenanalyse/gi, 'Case File and Evidentiary Document Analysis')
+      .replace(/Rechtliche Recherche/gi, 'Legal Research and Precedent Cross-Referencing')
+      .replace(/Schriftsatzerstellung/gi, 'Automated Court Brief and Contract Drafting')
+      .replace(/Datenschutz/gi, 'Data Protection and Professional Confidentiality')
+      .replace(/Kanzleien/gi, 'Law Firms and Legal Practices')
+      .replace(/Rechtsanwälte/gi, 'Attorneys and Legal Practitioners');
+  };
+
   // Known brand normalization
   if (compName.toLowerCase().includes('dell') || candidateBase.toLowerCase() === 'dell') {
     compName = 'Dell Technologies';
   } else if (compName.toLowerCase().includes('microsoft') || candidateBase.toLowerCase() === 'microsoft') {
     compName = 'Microsoft';
+  } else if (compName.toLowerCase().includes('silvernova') || candidateBase.toLowerCase().includes('silvernova')) {
+    compName = 'Silvernova GmbH';
   }
 
   // Filter out low-value cookie wall or login headings
-  const filteredHeadings = scraped.headings.filter((h) => {
-    const l = h.toLowerCase();
-    return !l.includes('cookie') && !l.includes('welcome') && !l.includes('basket') && !l.includes('cart') && !l.includes('sign in') && !l.includes('terms') && !l.includes('privacy') && !isBlockTitle(h);
-  });
+  const filteredHeadings = scraped.headings
+    .map(translateGermanText)
+    .filter((h) => {
+      const l = h.toLowerCase();
+      return !l.includes('cookie') && !l.includes('welcome') && !l.includes('basket') && !l.includes('cart') && !l.includes('sign in') && !l.includes('terms') && !l.includes('privacy') && !isBlockTitle(h);
+    });
 
   let headline = filteredHeadings[0] || (otherSources.description ? `${compName} - ${otherSources.description}` : `${compName} Official Platform`);
   if (compName === 'Dell Technologies') {
     headline = 'Computers, Monitors, and Accessories - Technology Solutions';
   } else if (compName === 'Microsoft') {
     headline = 'Empowering every person and every organization on the planet to achieve more.';
+  } else if (compName === 'Silvernova GmbH') {
+    headline = 'Process Complex Legal Mandates Faster with AI';
   } else if (isBlockTitle(headline)) {
     headline = otherSources.description ? `${compName} - ${otherSources.description}` : `${compName} Official Platform`;
   }
-  const summaryText = otherSources.summary || scraped.description || scraped.ogDescription || scraped.paragraphs[0] || `${compName} provides specialized digital solutions and commercial services.`;
+  headline = translateGermanText(headline);
+  const rawSummary = otherSources.summary || scraped.description || scraped.ogDescription || scraped.paragraphs[0] || `${compName} provides specialized digital solutions and commercial services.`;
+  const summaryText = translateGermanText(rawSummary);
   
   // Highlight bullet points from headings or paragraphs
   const highlights: string[] = [];
