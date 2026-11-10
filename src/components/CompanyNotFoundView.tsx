@@ -3,10 +3,12 @@ import { SearchX, HelpCircle, RotateCcw } from 'lucide-react';
 
 interface CompanyNotFoundViewProps {
   query?: string;
+  message?: string;
   onResetSearch: () => void;
 }
 
 export const CompanyNotFoundView: React.FC<CompanyNotFoundViewProps> = ({
+  message,
   onResetSearch,
 }) => {
   return (
@@ -22,7 +24,7 @@ export const CompanyNotFoundView: React.FC<CompanyNotFoundViewProps> = ({
             No verified company found
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            We couldn&apos;t verify an active official website, public filings, or recognized business profile matching your search.
+            {message || "We couldn't verify an active official website, public filings, or recognized business profile matching your search."}
           </p>
         </div>
 

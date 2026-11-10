@@ -67,8 +67,8 @@ export const CompanyAnalysisView: React.FC<CompanyAnalysisViewProps> = ({ report
           </div>
         </div>
 
-        {/* 3. Company Vitals (When Created & Number of Employees) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
+        {/* 3. Company Vitals (When Created, Employees, Headquarters & Paid Clients) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
           <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80">
             <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">
               <Calendar className="w-4 h-4 text-blue-600" />
@@ -96,6 +96,16 @@ export const CompanyAnalysisView: React.FC<CompanyAnalysisViewProps> = ({ report
             </div>
             <p className={`text-sm sm:text-base ${vitals.headquarters === 'Information not provided' ? 'text-slate-500 font-medium italic' : 'text-slate-900 font-bold'}`}>
               {vitals.headquarters}
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80">
+            <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">
+              <CreditCard className="w-4 h-4 text-purple-600" />
+              <span>Paid Clients</span>
+            </div>
+            <p className={`text-sm sm:text-base ${!vitals.paidClients || vitals.paidClients.startsWith('Information not provided') ? 'text-slate-500 font-medium italic' : 'text-slate-900 font-bold'}`}>
+              {vitals.paidClients || 'Information not provided'}
             </p>
           </div>
         </div>

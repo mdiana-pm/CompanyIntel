@@ -1,137 +1,104 @@
-# Small Company & Startup Discovery Engine
+# Global Multi-Country Search & MTS Group Resolution Architecture
 
-Enable comprehensive intelligence reports for small companies, emerging startups, and regional European enterprises (such as Silvernova GmbH) by enhancing domain resolution to strip corporate legal suffixes (GmbH, Inc, LLC, etc.), probing modern domain extensions (.ai, .de, .io, .com, .co), translating European content into clear English, and displaying verified founder backgrounds and early-stage vitals.
+Build a global company discovery pipeline covering all countries, international domain extensions, and multi-language entity variations, with direct resolution for MTS Group (Mobile TeleSystems / ПАО МТС).
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> **Confirmed Choices from Clarification**:
-> 1. **Domain & Suffix Resolution**: Strip legal suffixes (e.g., `GmbH`, `AG`, `Inc`, `LLC`, `Ltd`, `UG`, `SE`) from input strings and probe modern domain extensions (`.ai`, `.de`, `.io`, `.com`, `.co`) in sequence so companies hosted on specialized tech or regional domains resolve automatically.
-> 2. **Language & Content Synthesis**: Automatically translate and synthesize German and European website descriptions into clear, professional English.
-> 3. **Startup Vitals & Team Grounding**: For early-stage companies lacking public headcount filings, present verified founders (e.g. Lukas Ballweg, Nils Lißner, Felix Füssel) and early-stage startup status instead of dead-end "Information not provided" messages.
-
-- **Confirmed Decision 1**: Multi-extension candidate probing in `scrapeLiveWebsite` (`.ai`, `.de`, `.io`, `.com`, `.co`) with corporate entity suffix stripping.
-- **Confirmed Decision 2**: English translation and synthesis for non-English corporate websites and German legal-tech descriptions.
-- **Confirmed Decision 3**: Add Silvernova GmbH (`silvernova.ai`) into `ALL_COMPANY_CANDIDATES` and `BENCHMARK_SUMMARIES` as a grounded reference model for small AI startups, with zero semicolons.
+> The user confirmed the following decisions through interactive clarification:
+> - **Global Search Method**: Query global search engines and probe regional domain extensions across all countries (.ru, .de, .fr, .co.uk, .group, .it, .fi, etc.).
+> - **Multi-Language Matching**: Match acronyms, Latin and Cyrillic transliterations (MTS, МТС, Mobile TeleSystems, ПАО МТС), and corporate group terms.
+> - **MTS Group Presentation**: Display the MTS Group digital ecosystem and telecom executive report directly without intermediate disambiguation.
+> - **Strict Formatting**: Enforce zero semicolons across all UI copy, benchmark data, and API responses.
 
 ---
 
 ## 1. Overview & Core Concept
 
-### Why Small Companies Previously Failed
-
-```
-User Query: "Silvernova GmbH"
-               │
-               ▼
-Previous Heuristic: Strip non-alphanumeric and append ".com"
-               │
-               ▼
-Target URL Generated: "https://silvernovagmbh.com"
-               │
-               ▼
-DNS Lookup Error: Domain does not exist (ENOTFOUND)
-               │
-               ▼
-Fallback Scraper Result: null -> "No verified company found"
-```
-
-### The Solution
-
-```
-User Query: "Silvernova GmbH"
-               │
-               ▼
-1. Extract Brand & Strip Legal Suffixes
-   "Silvernova GmbH" ──► Brand: "Silvernova"
-               │
-               ▼
-2. Multi-Extension Domain Prober (Parallel / Cascading)
-   ┌──────────────────────────────────────────────┐
-   │ Check 1: https://silvernova.ai  ──► HTTP 200 │ (SUCCESS)
-   │ Check 2: https://silvernova.de               │
-   │ Check 3: https://silvernova.com              │
-   │ Check 4: https://silvernova.io               │
-   └──────────────────────────────────────────────┘
-               │
-               ▼
-3. Scrape & Synthesize Content (Translate German -> English)
-   "Komplexe Mandate schneller bearbeiten"
-   ──► "AI-powered legal associate accelerating complex case analysis for law firms"
-               │
-               ▼
-4. Grounded Vitals & Founders
-   Founded: 2025 in Munich, Germany by Lukas Ballweg, Nils Lißner, and Felix Füssel
-   Team: ~5–15 early-stage AI engineering and legal specialists
-```
+- **What It Does**: Upgrades company intelligence to search worldwide across all continents, supporting international organizations, state/regional conglomerates, and local domain extensions.
+- **MTS Group Resolution**: Provides an authentic executive breakdown for MTS Group, highlighting its mobile telecom network, digital banking (MTS Bank), media streaming (KION), and enterprise cloud infrastructure.
+- **Vitals & Key Disclosures**:
+  - When Created: 1993
+  - Number of Employees: ~60,000+ employees
+  - Headquarters: Moscow, Russia
+  - Paid Clients: Over 80 million verified mobile subscribers and digital ecosystem users
+  - Primary Website: `https://www.mts.ru` (and investor portal `https://ir.mts.ru`)
 
 ---
 
 ## 2. User Experience & Visual Design
 
-### Clean Small Company Report View
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 🔍  Silvernova GmbH                                       ✕ │  [ Research ]
-└─────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│ [SG] Silvernova GmbH                                        │
-│      https://silvernova.ai                                  │
-│      AI Legal Associate & Law Firm Workflow Automation      │
-│                                                             │
-│ ┌───────────────┐ ┌───────────────────┐ ┌─────────────────┐ │
-│ │ WHEN CREATED  │ │ NUMBER EMPLOYEES  │ │ HEADQUARTERS    │ │
-│ │ 2025 (Munich) │ │ ~5–15 (Seed Team) │ │ Munich, Germany │ │
-│ └───────────────┘ └───────────────────┘ └─────────────────┘ │
-│                                                             │
-│ ◆ WHAT THE COMPANY DOES                                     │
-│ Silvernova is a German legal-tech company developing a      │
-│ generative AI associate tailored for law firms and legal    │
-│ practices. The platform automates complex document review,  │
-│ case file structuring, and legal brief drafting while        │
-│ ensuring strict GDPR and professional secrecy compliance.   │
-└─────────────────────────────────────────────────────────────┘
-```
-
-- **Seamless Input Tolerance**: Searching `Silvernova`, `Silvernova GmbH`, or `silvernova.ai` all resolve to the authentic company profile.
-- **English Synthesis**: Foreign language copy (e.g. German legal terms) is synthesized into crisp, readable English.
-- **Accurate Founders & Vitals**: Displays founders and Munich headquarters rather than blank placeholders.
+- **Search Flow**:
+  - Entering "mts group", "mts", "mobile telesystems", "мтс", or "пао мтс" directly transitions to the comprehensive executive report for MTS Group.
+  - Searching other international companies across any country triggers worldwide search engine grounding and regional ccTLD probing.
+- **Executive Card Layout**:
+  - Four top vitals cards: When Created, Number of Employees, Headquarters, and Paid Clients.
+  - What the Company Does section explaining the actual business operations (telecom network, fintech, media streaming, and B2B cloud infrastructure).
+  - Footnote Sources section citing verified official portals and public filings.
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-| Decision | Chosen Approach | Rationale |
-|---|---|---|
-| **Domain Resolution** | Clean brand extraction + multi-TLD probe (`.ai`, `.de`, `.io`, `.com`, `.co`) | Allows small tech startups and European SMEs that don't own a `.com` to be discovered instantly. |
-| **Legal Suffixes** | Strip `GmbH`, `AG`, `Inc`, `LLC`, `Ltd`, `UG`, `SE`, `S.A.` | Users frequently type the legal registered name from invoices or filings. |
-| **Translation** | English synthesis for foreign headings and summaries | Keeps the executive report standardized and readable for all users. |
-| **Startup Vitals** | Grounded founders and early-stage startup headcount | Provides meaningful intelligence for newly incorporated startups (2024–2025). |
+- **Direct Resolution for MTS Group**:
+  - *Decision*: When searching for "mts group" or "mts", return the executive report directly rather than an ambiguous empty screen or disambiguation prompt.
+  - *Rationale*: Matches the user's explicit preference from the clarifying questions.
+- **Global Multi-TLD Probing**:
+  - *Decision*: Expand live web probing to include international TLDs (.ru, .group, .de, .eu, .co.uk, .it, .fi, .jp) and multi-language search endpoints.
+  - *Rationale*: Companies outside the US/UK frequently operate on domestic national domains that failed previous dot-com-only filters.
 
 ---
 
 ## 4. Technical Architecture & Data Strategy
 
-### Domain Discovery Sequence
 ```
-Query String
-     │
-     ▼
-Has Explicit Domain? (e.g. contains ".")
-  ├── YES ──► Fetch directly (e.g. "silvernova.ai")
-  └── NO  ──► Extract Base Brand:
-                - Strip legal suffixes (gmbh, inc, llc, ag, ltd, ug, se, corp)
-                - Build candidate URLs: [https://{brand}.ai, https://{brand}.de, https://{brand}.com, https://{brand}.io, https://{brand}.co]
-                - Fetch candidates with fast timeout until HTTP 200 OK
+┌─────────────────────────────────────────────────────────────┐
+│                       Client (React)                        │
+│          User queries: "mts group", "mts", "мтс"            │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Express Backend Server                   │
+│                                                             │
+│  1. Multi-Language & Acronym Resolver                       │
+│     - Normalizes Latin, Cyrillic, and regional tokens       │
+│     - Matches "mts group", "mts", "пао мтс", "mobile        │
+│       telesystems" to MTS Group                             │
+│                                                             │
+│  2. Global Worldwide Web Discovery Engine                   │
+│     - Searches global APIs across all country domains       │
+│     - Resolves official corporate sites via Wikidata P856   │
+│     - Probes international TLDs (.ru, .group, .de, etc.)    │
+│                                                             │
+│  3. Strict Sanitization Pipeline                            │
+│     - Zero semicolons enforced                              │
+│     - Anti-dictionary definition guardrails                 │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Executive Report Output                   │
+│   Company: MTS Group (Mobile TeleSystems)                   │
+│   Website: https://www.mts.ru                               │
+│   Vitals: 1993 | 60,000+ staff | Moscow | 80M+ clients      │
+│   Sources: mts.ru, ir.mts.ru, Wikipedia citation            │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Components to Update
-1. `server.ts`:
-   - In `scrapeLiveWebsite`: Add legal suffix stripping (`\b(gmbh|ag|inc|llc|ltd|ug|se|corp|sa|sarl|bv|nv)\b`) and multi-TLD probing (`.ai`, `.de`, `.io`, `.com`, `.co`).
-   - In `buildReportFromScrapedData`: Add English translation/synthesis for common German legal and business terms (`Mandate`, `Kanzleien`, `Recht`, `Datenschutz`, `Schriftsätze`).
-   - Add `silvernova` aliases to `BENCHMARK_ALIASES` and `isLikelyGibberish` whitelist.
-2. `src/data/benchmarks.ts`:
-   - Add `silvernova.ai` into `ALL_COMPANY_CANDIDATES` with aliases (`silvernova`, `silvernova gmbh`, `silvernova ai`).
-   - Add complete verified `BENCHMARK_SUMMARIES['silvernova.ai']` and alias `BENCHMARK_SUMMARIES['silvernovagmbh']`. Strictly zero semicolons.
+### Proposed Changes
+
+1. **`src/data/benchmarks.ts`**:
+   - Add MTS Group (`mts.ru` / `mts`) to `ALL_COMPANY_CANDIDATES` with aliases: `mts group`, `mts`, `mobile telesystems`, `пао мтс`, `мтс`, `mts russia`, `mts telecom`.
+   - Add full benchmark profile for `BENCHMARK_SUMMARIES['mts']` with verified vitals (1993, ~60,000+ staff, Moscow, over 80 million clients), detailed monetization, products, and sources (`mts.ru`, `ir.mts.ru`, Wikipedia).
+   - Ensure zero semicolons in all copy.
+
+2. **`server.ts`**:
+   - Expand `candidateUrls` in `scrapeLiveWebsite` to include regional and international extensions (.ru, .group, .de, .fr, .co.uk, .it, .fi).
+   - Enhance `searchLiveWebCompanies` with international transliteration support and multilingual Wikipedia/Wikidata entity mapping.
+   - Update direct resolution in `POST /api/company-intel` to immediately resolve MTS Group queries.
+
+3. **Verification**:
+   - Verify `POST /api/company-intel` with `{"companyName": "mts group"}` returns the complete MTS Group executive report directly.
+   - Verify `POST /api/company-intel` with `{"companyName": "mts"}` and `{"companyName": "мтс"}`.
+   - Run compilation and linting to ensure zero errors and zero semicolons.

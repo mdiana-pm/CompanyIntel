@@ -27,6 +27,7 @@ export interface CompanyVitals {
   createdYear: string;
   employeeCount: string;
   headquarters: string;
+  paidClients?: string;
 }
 
 export interface CompetitorItem {
@@ -79,6 +80,8 @@ export interface DisambiguationResponse {
   type: 'disambiguation';
   query: string;
   message?: string;
+  hasMore?: boolean;
+  totalCount?: number;
   options: CompanyDisambiguationOption[];
 }
 

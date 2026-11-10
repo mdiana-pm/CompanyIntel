@@ -290,12 +290,14 @@ export default function App() {
       {/* Main Content Viewport */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* State 1: Disambiguation View (e.g. searching 'Heo' finds heospace.com and heo.com) */}
+        {/* State 1: Disambiguation View (e.g. searching 'you' finds YouHodler, TrustYou, etc.) */}
         {disambiguationData && (
           <CompanyDisambiguationView
             query={disambiguationData.query}
             message={disambiguationData.message}
             options={disambiguationData.options}
+            hasMore={disambiguationData.hasMore}
+            totalCount={disambiguationData.totalCount}
             onSelectCompany={handleSelectDisambiguatedCompany}
           />
         )}
@@ -304,6 +306,7 @@ export default function App() {
         {notFoundData && (
           <CompanyNotFoundView
             query={notFoundData.query}
+            message={notFoundData.message}
             onResetSearch={handleReset}
           />
         )}

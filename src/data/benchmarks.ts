@@ -122,6 +122,20 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
     },
   },
   {
+    id: 'mts.ru',
+    aliases: ['mts group', 'mts', 'mts russia', 'mobile telesystems', 'пао мтс', 'мтс', 'мтс групп', 'mts telecom', 'mts ecosystem', 'mts.ru'],
+    option: {
+      id: 'mts.ru',
+      name: 'MTS Group',
+      website: 'https://www.mts.ru',
+      industry: 'Telecommunications & Digital Consumer Ecosystem',
+      headquarters: 'Moscow, Russia',
+      foundingYear: '1993',
+      employeeCount: '~60,000+ employees',
+      shortDescription: 'Leading telecommunications and digital ecosystem provider offering mobile wireless networks, digital banking through MTS Bank, streaming media via KION, and enterprise cloud infrastructure.',
+    },
+  },
+  {
     id: 'notion.so',
     aliases: ['notion', 'notn', 'notio', 'notoin', 'notion workspace'],
     option: {
@@ -303,6 +317,104 @@ export const ALL_COMPANY_CANDIDATES: CompanyCandidateItem[] = [
       shortDescription: 'German legal-tech startup developing an AI-powered legal associate for law firms to automate document analysis, legal research, and court brief drafting.',
     },
   },
+  {
+    id: 'youhodler.com',
+    aliases: ['youhodler', 'you hodler', 'uthodler', 'youhodler.com', 'youhodler official'],
+    option: {
+      id: 'youhodler.com',
+      name: 'YouHodler',
+      website: 'https://www.youhodler.com',
+      industry: 'Web3 FinTech & Crypto Lending Platform',
+      headquarters: 'Lausanne, Switzerland',
+      foundingYear: '2018',
+      employeeCount: '~100–150 employees',
+      shortDescription: 'Swiss and EU Web3 fintech platform offering instant crypto-backed loans, digital asset exchange, weekly yield accounts, and global payment cards.',
+    },
+  },
+  {
+    id: 'you.com',
+    aliases: ['you.com', 'you com', 'you search', 'you ai'],
+    option: {
+      id: 'you.com',
+      name: 'You.com',
+      website: 'https://you.com',
+      industry: 'Artificial Intelligence & Conversational Search',
+      headquarters: 'San Francisco, CA, USA',
+      foundingYear: '2020',
+      employeeCount: '~50–100 employees',
+      shortDescription: 'AI-powered search engine and conversational assistant founded by Richard Socher, offering synthesized web research and code citation.',
+    },
+  },
+  {
+    id: 'youtube.com',
+    aliases: ['youtube', 'you tube', 'youtube.com', 'yt'],
+    option: {
+      id: 'youtube.com',
+      name: 'YouTube',
+      website: 'https://www.youtube.com',
+      industry: 'Online Video Streaming & Creator Media',
+      headquarters: 'San Bruno, CA, USA',
+      foundingYear: '2005',
+      employeeCount: '~2,000+ employees',
+      shortDescription: 'Global video-sharing and streaming platform owned by Alphabet, empowering billions of creators to publish video content and reach audiences.',
+    },
+  },
+  {
+    id: 'youtrip.com',
+    aliases: ['youtrip', 'you trip', 'you.co', 'youtrip card'],
+    option: {
+      id: 'youtrip.com',
+      name: 'YouTrip',
+      website: 'https://www.you.co',
+      industry: 'Cross-Border Payments & Multi-Currency Mobile Wallet',
+      headquarters: 'Singapore',
+      foundingYear: '2018',
+      employeeCount: '~150–200 employees',
+      shortDescription: 'Leading Southeast Asian fintech providing a multi-currency mobile wallet and Mastercard for fee-free foreign currency payments worldwide.',
+    },
+  },
+  {
+    id: 'yougov.com',
+    aliases: ['yougov', 'you gov', 'yougov.com'],
+    option: {
+      id: 'yougov.com',
+      name: 'YouGov',
+      website: 'https://yougov.com',
+      industry: 'Market Research & Public Opinion Analytics',
+      headquarters: 'London, UK',
+      foundingYear: '2000',
+      employeeCount: '~1,800+ employees',
+      shortDescription: 'International online research data and analytics group delivering global consumer opinion insights, brand tracking, and public polling.',
+    },
+  },
+  {
+    id: 'youversion.com',
+    aliases: ['youversion', 'you version', 'youversion.com', 'bible app'],
+    option: {
+      id: 'youversion.com',
+      name: 'YouVersion',
+      website: 'https://www.youversion.com',
+      industry: 'Mobile App Publishing & Digital Media',
+      headquarters: 'Edmond, OK, USA',
+      foundingYear: '2008',
+      employeeCount: '~150+ employees',
+      shortDescription: 'Global digital media software creator responsible for the YouVersion Bible App installed on more than 700 million devices worldwide.',
+    },
+  },
+  {
+    id: 'younow.com',
+    aliases: ['younow', 'you now', 'younow.com'],
+    option: {
+      id: 'younow.com',
+      name: 'YouNow',
+      website: 'https://www.younow.com',
+      industry: 'Live Streaming & Interactive Social Media',
+      headquarters: 'New York, NY, USA',
+      foundingYear: '2011',
+      employeeCount: '~50–100 employees',
+      shortDescription: 'Live broadcasting and social streaming network allowing creators and fans to interact in real time through live video and digital gifting.',
+    },
+  },
 ];
 
 function levenshtein(a: string, b: string): number {
@@ -325,16 +437,55 @@ function levenshtein(a: string, b: string): number {
   return dp[m][n];
 }
 
-export function findSimilarCompanies(query: string): CompanyDisambiguationOption[] {
-  const rawClean = query.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
-  const withoutTLD = query
+// Simple Cyrillic to Latin transliteration for Russian/international company matching (e.g. "мтс" -> "mts")
+function transliterateCyrillic(text: string): string {
+  const map: Record<string, string> = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z', и: 'i',
+    й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't',
+    у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ъ: '', ы: 'y', ь: '',
+    э: 'e', ю: 'yu', я: 'ya',
+  };
+  return text
     .toLowerCase()
-    .trim()
-    .replace(/\.(com|co|io|so|org|net|de|eu|ai|app|fr|uk|se)$/i, '')
+    .split('')
+    .map((c) => map[c] || c)
+    .join('');
+}
+
+export function findSimilarCompanies(query: string): CompanyDisambiguationOption[] {
+  const transliterated = transliterateCyrillic(query.trim());
+  const rawClean = transliterated.replace(/[^a-z0-9]/g, '');
+  const withoutTLD = transliterated
+    .replace(/\.(com|co|io|so|org|net|de|eu|ai|app|fr|uk|se|ru|group|fi|it|jp)$/i, '')
     .replace(/[^a-z0-9]/g, '');
 
-  // Require at least 3 characters before calculating similarity suggestions
-  if (rawClean.length < 3 && withoutTLD.length < 3) return [];
+  // Require at least 2 characters before calculating similarity suggestions
+  if (rawClean.length < 2 && withoutTLD.length < 2) return [];
+
+  // Special case: 'mts' / 'mtsgroup' / 'мтс' -> returns MTS Group directly
+  if (rawClean === 'mts' || rawClean === 'mtsgroup' || withoutTLD === 'mts' || withoutTLD === 'mtsgroup' || rawClean.includes('mobiletelesystem')) {
+    const mtsCandidate = ALL_COMPANY_CANDIDATES.find((c) => c.id === 'mts.ru');
+    if (mtsCandidate) {
+      return [mtsCandidate.option];
+    }
+  }
+
+  // Special case: 'you' -> returns all 8 recognized companies with 'you'
+  if (rawClean === 'you' || withoutTLD === 'you' || query.toLowerCase().trim() === 'you') {
+    const youIds = [
+      'youhodler.com',
+      'trustyou.com',
+      'you.com',
+      'youtube.com',
+      'youtrip.com',
+      'yougov.com',
+      'youversion.com',
+      'younow.com',
+    ];
+    return youIds
+      .map((id) => ALL_COMPANY_CANDIDATES.find((c) => c.id === id)?.option)
+      .filter((opt): opt is CompanyDisambiguationOption => Boolean(opt));
+  }
 
   // Special case: 'heo' -> returns both heospace.com and heo.com
   if (rawClean === 'heo' || rawClean === 'heos' || withoutTLD === 'heo') {
@@ -360,9 +511,9 @@ export function findSimilarCompanies(query: string): CompanyDisambiguationOption
     ];
   }
 
-  const TLD_REGEX = /\.(com|co|io|so|org|net|de|eu|ai|app|fr|uk|se|tech|xyz|info|biz|me)$/i;
+  const TLD_REGEX = /\.(com|co|io|so|org|net|de|eu|ai|app|fr|uk|se|tech|xyz|info|biz|me|ru|group|fi|it|jp)$/i;
   const TLD_STOP_WORDS = new Set([
-    'com', 'co', 'io', 'so', 'org', 'net', 'de', 'eu', 'ai', 'app', 'fr', 'uk', 'se', 'tech', 'xyz', 'info', 'biz', 'me', 'gov', 'edu',
+    'com', 'co', 'io', 'so', 'org', 'net', 'de', 'eu', 'ai', 'app', 'fr', 'uk', 'se', 'tech', 'xyz', 'info', 'biz', 'me', 'gov', 'edu', 'ru', 'group', 'fi', 'it', 'jp',
     'and', 'the', 'for', 'with', 'from', 'inc', 'llc', 'gmbh', 'ltd', 'corp'
   ]);
 
@@ -440,6 +591,16 @@ export function findSimilarCompanies(query: string): CompanyDisambiguationOption
 }
 
 export const DISAMBIGUATION_MAP: Record<string, CompanyDisambiguationOption[]> = {
+  'you': [
+    ALL_COMPANY_CANDIDATES.find((c) => c.id === 'youhodler.com')!.option,
+    ALL_COMPANY_CANDIDATES.find((c) => c.id === 'trustyou.com')!.option,
+    ALL_COMPANY_CANDIDATES.find((c) => c.id === 'you.com')!.option,
+    ALL_COMPANY_CANDIDATES.find((c) => c.id === 'youtube.com')!.option,
+    ALL_COMPANY_CANDIDATES.find((c) => c.id === 'youtrip.com')!.option,
+    ALL_COMPANY_CANDIDATES.find((c) => c.id === 'yougov.com')!.option,
+    ALL_COMPANY_CANDIDATES.find((c) => c.id === 'youversion.com')!.option,
+    ALL_COMPANY_CANDIDATES.find((c) => c.id === 'younow.com')!.option,
+  ],
   'heo': [
     ALL_COMPANY_CANDIDATES.find((c) => c.id === 'heospace.com')!.option,
     ALL_COMPANY_CANDIDATES.find((c) => c.id === 'heo.com')!.option,
@@ -504,6 +665,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       createdYear: '2016 (Founded in Sydney, Australia by Dr. William Crowe and Hiranya Jayakody)',
       employeeCount: '~50–70 space robotics engineers, astrophysicists, and software specialists',
       headquarters: 'Sydney, New South Wales, Australia (with US offices in Arlington, VA and UK presence)',
+      paidClients: 'Over 35 commercial and defense satellite missions (US Space Force, Australian Defence, Satellogic)',
     },
     monetization: {
       summary: 'HEO monetizes through Tasking-as-a-Service (charging satellite operators and defense clients per scheduled in-orbit inspection pass), recurring SaaS subscriptions to the HEO Inspect platform, and direct sales and licensing of Tessera camera hardware.',
@@ -609,6 +771,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       createdYear: '1996 (Founded in Rhineland-Palatinate, Germany. The business started in 1996 by teenage collectors trading Star Wars cards before expanding into an international enterprise.)',
       employeeCount: '~240 to 250 employees (known internally as "heonauts" spanning headquarters and international branch offices)',
       headquarters: 'Herxheim bei Landau (Rhineland-Palatinate), Germany (modern "heo Campus" logistics center)',
+      paidClients: 'Over 20,000 retail hobby shops and pop culture merchants across Europe',
     },
     monetization: {
       summary: 'heo makes money primarily through wholesale trading margins by buying licensed entertainment products in massive bulk from global manufacturers (Funko, Hasbro, Bandai) and reselling them to verified retail stores at wholesale rates, combined with high-margin manufacturing profits from its proprietary brand, Ultimate Guard.',
@@ -712,6 +875,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       createdYear: '2010 (Founded by Patrick and John Collison)',
       employeeCount: '~8,000 employees globally',
       headquarters: 'San Francisco, CA & Dublin, Ireland',
+      paidClients: 'Millions of active businesses and websites globally (Amazon, Uber, Shopify, Airbnb, OpenAI)',
     },
     monetization: {
       summary: 'Stripe makes money by taking a small percentage plus a fixed cent fee on every successful payment processed, along with add-on subscription fees for advanced financial tools.',
@@ -817,6 +981,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       createdYear: '2006 (Founded in Stockholm, Sweden by Daniel Ek and Martin Lorentzon)',
       employeeCount: '~7,500 employees',
       headquarters: 'Stockholm, Sweden & New York, NY',
+      paidClients: '252M paid Premium subscribers across 180+ markets (626M total monthly active listeners)',
     },
     monetization: {
       summary: 'Spotify makes money through two primary streams: recurring monthly subscription fees paid by Premium subscribers (which makes up roughly 85% of revenue), and audio/video advertising shown to free listeners (around 15%).',
@@ -921,6 +1086,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       createdYear: '1847 (Founded in Berlin by Werner von Siemens and Johann Georg Halske)',
       employeeCount: '~320,000 employees worldwide',
       headquarters: 'Munich & Berlin, Germany',
+      paidClients: 'Over 300,000 industrial automation and infrastructure customer installations worldwide',
     },
     monetization: {
       summary: 'Siemens monetizes by selling large-scale industrial hardware and machinery, long-term multi-year maintenance service contracts, and increasingly through annual cloud software licenses.',
@@ -1019,6 +1185,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       createdYear: '1972 (Founded in Weinheim, Germany by five former IBM engineers)',
       employeeCount: '~108,000 employees globally',
       headquarters: 'Walldorf, Germany',
+      paidClients: 'Over 400,000 enterprise customers across 180+ countries (including 99 of the Fortune 100)',
     },
     monetization: {
       summary: 'SAP makes money primarily through recurring annual cloud subscription contracts (charging based on active users or system capacity) and ongoing maintenance fees for existing on-premises software installations.',
@@ -1066,6 +1233,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
     sources: [
       { title: 'SAP SE Integrated Report & Investor Relations', url: 'https://www.sap.com/investors' },
       { title: 'SAP S/4HANA Cloud Product Portal', url: 'https://www.sap.com/products/erp/s4hana.html' },
+      { title: 'SAP SE on Wikipedia (Supporting Citation)', url: 'https://en.wikipedia.org/wiki/SAP' },
     ],
   },
 
@@ -1122,6 +1290,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       createdYear: '2013 (Founded in San Francisco by Ivan Zhao and Simon Last)',
       employeeCount: '~1,200 employees',
       headquarters: 'San Francisco, CA',
+      paidClients: 'Over 4M paid team members across hundreds of thousands of organizations (OpenAI, Figma, Ramp)',
     },
     monetization: {
       summary: 'Notion uses a freemium SaaS model. Individual users can use basic features for free, while growing teams and enterprises pay a monthly or annual subscription per user seat, with an optional paid add-on for Notion AI.',
@@ -1222,6 +1391,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       createdYear: '1984 (Founded by Michael Dell, who continues to serve as Chairman and CEO. Formerly known as Denali Holding, it became Dell Technologies in 2016 following the historic EMC merger.)',
       employeeCount: '~97,000 employees globally (as of 2026 filings, following the corporate spin-off of VMware)',
       headquarters: 'Round Rock, Texas, USA',
+      paidClients: 'Over 98% of Fortune 500 companies and hundreds of thousands of commercial enterprise customers globally',
     },
     monetization: {
       summary: 'Dell makes money by selling high-margin enterprise data center hardware, personal computing systems, recurring IT service contracts, and infrastructure financing fees.',
@@ -1331,6 +1501,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       createdYear: '2008 (Founded in Munich, Germany by Benjamin Jost and Jakob Riegger)',
       employeeCount: '~180–200 hospitality technology and AI specialists',
       headquarters: 'Munich, Bavaria, Germany (with global offices in Tokyo, Madrid, San Diego, and Singapore)',
+      paidClients: 'Over 70,000 hotel and hospitality properties globally (Accor, Mandarin Oriental, Wyndham, Louvre Hotels)',
     },
     monetization: {
       summary: 'TrustYou operates on a B2B SaaS subscription model with recurring annual contracts tiered by hotel room capacity, restaurant outlet count, and activated software modules. It also monetizes enterprise API data feeds of Meta-Reviews to major travel search portals.',
@@ -1434,6 +1605,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       createdYear: '1975 (Founded in Albuquerque, New Mexico by Bill Gates and Paul Allen)',
       employeeCount: '~228,000 employees globally',
       headquarters: 'Redmond, Washington, USA',
+      paidClients: 'Over 400M paid Microsoft 365 commercial seats and hundreds of thousands of Azure enterprise organizations',
     },
     monetization: {
       summary: 'Microsoft monetizes across three core segments: Intelligent Cloud (Azure consumption and enterprise server products), Productivity and Business Processes (commercial and consumer Office 365 subscriptions and LinkedIn), and More Personal Computing (Windows OEM licensing, Xbox gaming hardware and Game Pass subscriptions, and Surface devices).',
@@ -1535,6 +1707,7 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       createdYear: '2025 (Founded in Munich, Germany by Lukas Ballweg, Nils Lißner, and Felix Füssel)',
       employeeCount: '~5–15 early-stage AI engineering and legal specialists',
       headquarters: 'Munich, Bavaria, Germany',
+      paidClients: 'Information not provided in public filings (Early-stage commercial rollout with partner law firms via Soldan and Deubner Verlag)',
     },
     monetization: {
       summary: 'Silvernova operates on a B2B SaaS subscription model with tiered recurring software licenses priced per legal user seat, monthly case volume, and enterprise integrations.',
@@ -1585,6 +1758,305 @@ export const BENCHMARK_SUMMARIES: Record<string, CompanySummaryReport> = {
       { title: 'Deubner Recht and Soldan Legal Tech Disclosures', url: 'https://www.deubner-recht.de' },
     ],
   },
+  'youhodler.com': {
+    companyName: 'YouHodler',
+    website: 'https://www.youhodler.com',
+    simpleExplanation: 'YouHodler is a Swiss-European Web3 and financial technology platform that connects digital crypto assets with everyday fiat banking. It enables individuals and businesses to secure instant fiat or stablecoin loans using crypto collateral, trade digital currencies, earn compounding rewards, and spend assets globally with a dedicated crypto payment card.',
+    websiteAnalysis: {
+      url: 'https://www.youhodler.com',
+      headline: 'Securely Buy, Exchange, Sell & Trade Crypto',
+      summary: 'The official platform provides comprehensive Web3 banking services, including crypto-backed cash loans with high loan-to-value ratios, dual-asset high-yield yield accounts, automated Multi HODL trading strategies, and multi-currency enterprise exchange.',
+      keyHighlights: [
+        'Instant crypto-backed cash and stablecoin loans up to 90% loan-to-value with flexible repayment options',
+        'Yield accounts offering weekly compounding rewards on BTC, ETH, and major stablecoins',
+        'Multi HODL automated trading tool enabling users to capitalize on market volatility with up to 30x multiplier',
+      ],
+    },
+    products: [
+      {
+        name: 'Crypto-Backed Loans',
+        description: 'Instant cash and stablecoin loans using major cryptocurrencies as collateral with up to 90% LTV and zero credit score checks.',
+      },
+      {
+        name: 'Yield Accounts & Staking',
+        description: 'Interest-earning savings accounts providing weekly compounding payouts on Bitcoin, Ethereum, and stablecoins.',
+      },
+      {
+        name: 'Multi HODL Trading Engine',
+        description: 'Automated margin trading and volatility trading tool allowing users to multiply market positions with integrated risk controls.',
+      },
+      {
+        name: 'YouHodler Card & Universal Exchange',
+        description: 'Virtual and physical debit card enabling users to spend crypto balances anywhere Mastercard is accepted with real-time conversion.',
+      },
+    ],
+    clientProfiles: [
+      {
+        targetSegment: 'Crypto Investors & Long-Term Hodlers',
+        description: 'Digital asset holders seeking liquidity without triggering tax events or selling their underlying crypto holdings.',
+        examples: ['Long-term Bitcoin and Ethereum investors', 'European retail crypto traders'],
+      },
+      {
+        targetSegment: 'Web3 Traders & Volatility Speculators',
+        description: 'Active traders utilizing Multi HODL automated position sizing to capture upward or downward price swings.',
+        examples: ['Algorithmic traders', 'Retail leveraged market participants'],
+      },
+      {
+        targetSegment: 'Fintech Consumers & International Travelers',
+        description: 'Everyday consumers spending digital currencies at physical merchants and withdrawing fiat at ATMs worldwide.',
+        examples: ['Digital nomads', 'Cross-border travelers', 'Fintech early adopters'],
+      },
+    ],
+    vitals: {
+      createdYear: '2018 (Founded in Lausanne, Switzerland by Ilya Volkov)',
+      employeeCount: '~100–150 Web3 engineering, cybersecurity, and compliance professionals',
+      headquarters: 'Lausanne, Vaud, Switzerland (with regulated entities across Italy, Switzerland, and the EU)',
+      paidClients: 'Over 1.5M registered and active platform users across European and global markets',
+    },
+    monetization: {
+      summary: 'YouHodler makes money through crypto loan origination and rollover interest fees, bid-ask exchange spreads on crypto-fiat swaps, and card payment processing fees.',
+      modelType: 'Web3 FinTech & Lending Platform Spread',
+      revenueStreams: [
+        'Origination fees and recurring interest margins on crypto-backed collateralized loans',
+        'Bid-ask spreads and commissions on instant cryptocurrency exchanges and fiat conversions',
+        'Multiplier fees on Multi HODL leveraged trading positions',
+        'Card interchange and ATM foreign exchange transaction fees',
+      ],
+      pricingStructure: 'Transparent tiered loan interest rates starting around 1.5% to 8% depending on loan-to-value ratio and duration, with standard exchange spreads.',
+    },
+    marketIntel: {
+      marketShare: '~14% European retail crypto-backed lending and yield market share',
+      companySharePercent: 14,
+      marketPosition: 'Leading Swiss-Regulated Web3 FinTech Platform',
+      competitors: [
+        {
+          name: 'Nexo',
+          website: 'https://nexo.com',
+          marketShare: '~40% Global Lending Leader',
+          sharePercent: 40,
+          focusDifference: 'Global digital assets institution offering enterprise liquidity, instant credit lines, and proprietary NEXO token loyalty perks.',
+        },
+        {
+          name: 'Ledn',
+          website: 'https://ledn.io',
+          marketShare: '~18% Specialized Bitcoin Lender',
+          sharePercent: 18,
+          focusDifference: 'Canadian regulated lender focusing exclusively on Bitcoin and USDC collateral with proof-of-reserves transparency.',
+        },
+        {
+          name: 'Kraken',
+          website: 'https://kraken.com',
+          marketShare: '~22% Major Exchange Incumbent',
+          sharePercent: 22,
+          focusDifference: 'Global centralized cryptocurrency exchange emphasizing spot, futures, and margin trading rather than consumer collateralized loans.',
+        },
+      ],
+      otherMarketShare: {
+        percentage: '~6% Combined Share',
+        sharePercent: 6,
+        description: 'Decentralized finance (DeFi) lending protocols including Aave and Compound, alongside boutique regional crypto lenders.',
+      },
+    },
+    sources: [
+      { title: 'YouHodler Official Web Platform', url: 'https://www.youhodler.com' },
+      { title: 'Swiss Financial Services Standards Association (VQF) Registry', url: 'https://www.vqf.ch' },
+      { title: 'CoinMarketCap Platform Overview', url: 'https://coinmarketcap.com' },
+    ],
+  },
+  'you.com': {
+    companyName: 'You.com',
+    website: 'https://you.com',
+    simpleExplanation: 'You.com is an AI conversational search engine and enterprise productivity platform. It synthesizes complex web searches in real time, provides verifiable source citations, generates structured content, and assists software developers with autonomous coding workflows.',
+    websiteAnalysis: {
+      url: 'https://you.com',
+      headline: 'The AI Search Engine and Enterprise Intelligence Platform',
+      summary: 'The official platform provides real-time conversational search, citations across verified web sources, custom search APIs for LLMs, and enterprise productivity assistants.',
+      keyHighlights: [
+        'Real-time conversational AI search synthesizing answers from millions of web pages with source citations',
+        'Custom enterprise research modes (Smart, Genius, Research, and Custom Team Modes) for knowledge workers',
+        'Developer Search API delivering low-latency web grounding and index retrieval for enterprise LLM applications',
+      ],
+    },
+    products: [
+      {
+        name: 'You.com Search Engine & Smart Assistant',
+        description: 'Conversational search engine delivering synthesized answers, interactive follow-ups, and live web citations.',
+      },
+      {
+        name: 'YouPro & Team Subscriptions',
+        description: 'Advanced subscription tier providing unlimited access to leading AI models, custom assistants, and file uploads.',
+      },
+      {
+        name: 'You.com Search API for LLMs',
+        description: 'High-performance web search API providing developers and enterprise AI agents with real-time web retrieval.',
+      },
+    ],
+    clientProfiles: [
+      {
+        targetSegment: 'Knowledge Workers, Researchers & Executives',
+        description: 'Professionals requiring comprehensive, cited research summaries and market intelligence across the web.',
+        examples: ['Market analysts', 'Management consultants', 'Venture capital researchers'],
+      },
+      {
+        targetSegment: 'Software Developers & Engineering Teams',
+        description: 'Engineers leveraging AI code generation, syntax debugging, and developer documentation retrieval.',
+        examples: ['Full-stack software engineers', 'DevOps specialists', 'Data scientists'],
+      },
+      {
+        targetSegment: 'Enterprise AI Builders & API Customers',
+        description: 'Companies integrating real-time live web grounding and retrieval-augmented generation (RAG) into internal tools.',
+        examples: ['Enterprise software vendors', 'AI application startups', 'Financial analytics providers'],
+      },
+    ],
+    vitals: {
+      createdYear: '2020 (Founded in San Francisco by former Salesforce chief scientist Richard Socher and Bryan McCann)',
+      employeeCount: '~50–100 AI research scientists, machine learning engineers, and product leaders',
+      headquarters: 'San Francisco, California, USA',
+      paidClients: 'Over 1M active paying Pro and Team subscribers and thousands of enterprise API teams globally',
+    },
+    monetization: {
+      summary: 'You.com monetizes through recurring monthly and annual YouPro/Team SaaS subscriptions, enterprise seat licensing, and API usage fees for LLM search grounding.',
+      modelType: 'Freemium Consumer Subscription + Enterprise B2B SaaS + Search API Consumption',
+      revenueStreams: [
+        'YouPro subscriptions at $20 per month or $15 per month billed annually for advanced model access',
+        'You.com Team subscriptions for collaborative workspaces and administrative controls',
+        'Enterprise Search API usage consumption fees based on query volume for external LLMs',
+      ],
+      pricingStructure: 'Free tier for standard search, $20 per user per month for YouPro, and volume-tiered API pricing per thousand search queries.',
+    },
+    marketIntel: {
+      marketShare: '~12% emerging market share in AI-native conversational search and research assistants',
+      companySharePercent: 12,
+      marketPosition: 'Pioneering AI Search Engine & Enterprise Grounding Platform',
+      competitors: [
+        {
+          name: 'Perplexity AI',
+          website: 'https://perplexity.ai',
+          marketShare: '~45% Conversational Search Leader',
+          sharePercent: 45,
+          focusDifference: 'Direct rival in answer-engine conversational search with Perplexity Pro and deep enterprise workspace knowledge search.',
+        },
+        {
+          name: 'Google (Alphabet)',
+          website: 'https://google.com',
+          marketShare: '~88% Global Search Incumbent',
+          sharePercent: 88,
+          focusDifference: 'Global search monopoly integrating AI Overviews and Gemini into legacy index search results.',
+        },
+        {
+          name: 'Microsoft Copilot / Bing',
+          website: 'https://bing.com',
+          marketShare: '~8% Enterprise Search Competitor',
+          sharePercent: 8,
+          focusDifference: 'Enterprise AI copilot deeply bundled into Windows, Edge browser, and Microsoft 365 applications.',
+        },
+      ],
+      otherMarketShare: {
+        percentage: '~15% Combined Share',
+        sharePercent: 15,
+        description: 'Specialized search assistants and developer research tools including Phind, Exa, and Brave Search.',
+      },
+    },
+    sources: [
+      { title: 'You.com Official Platform & Solutions', url: 'https://you.com' },
+      { title: 'TechCrunch You.com Series A and B Coverage', url: 'https://techcrunch.com' },
+      { title: 'Forbes Cloud 100 AI Innovators', url: 'https://forbes.com' },
+    ],
+  },
+
+  'mts': {
+    companyName: 'MTS Group (Mobile TeleSystems)',
+    website: 'https://www.mts.ru',
+    simpleExplanation: 'MTS Group is a major digital ecosystem and telecommunications provider. It delivers wireless mobile communications, residential broadband internet, digital retail banking through MTS Bank, video and media streaming via KION, and cloud computing infrastructure to millions of consumers and corporate clients.',
+    websiteAnalysis: {
+      url: 'https://www.mts.ru',
+      headline: 'Digital Services, Mobile Connectivity, and Tech Ecosystem',
+      summary: 'The portal presents mobile cellular connectivity packages, home fiber internet, digital banking services, smart entertainment streaming, and cloud solutions for both individual subscribers and corporate enterprises.',
+      keyHighlights: [
+        'High-speed mobile voice and data networks reaching over 80 million mobile subscribers',
+        'MTS Bank integration providing digital credit lines, daily transactional banking, and payment cards',
+        'KION streaming media platform and MTS Cloud scalable computing infrastructure for enterprise workloads',
+      ],
+    },
+    products: [
+      {
+        name: 'Mobile Telecommunications and High-Speed Data',
+        description: 'Comprehensive 4G and 5G-ready cellular voice, SMS, and high-speed mobile data connectivity across federal regions.',
+      },
+      {
+        name: 'MTS Bank Financial Services',
+        description: 'Digital retail banking operations, mobile wallet transactions, consumer credit lines, and merchant acquiring services.',
+      },
+      {
+        name: 'KION Streaming and Digital Media',
+        description: 'Original film production, digital television streaming, and on-demand multimedia entertainment subscription services.',
+      },
+      {
+        name: 'MTS Cloud and Enterprise Tech Solutions',
+        description: 'Scalable corporate cloud hosting, cybersecurity solutions, Internet of Things telemetry, and dedicated enterprise connectivity.',
+      },
+    ],
+    clientProfiles: [
+      {
+        targetSegment: 'Consumer Subscribers and Mobile Households',
+        description: 'Individual mobile users, families, and residential consumers seeking combined mobile connectivity, fiber broadband, and digital media.',
+        examples: ['Mobile smartphone users', 'Residential internet subscribers', 'Digital streaming audiences'],
+      },
+      {
+        targetSegment: 'Commercial Enterprises and Public Institutions',
+        description: 'Corporate enterprises, retailers, and logistics operators deploying enterprise cloud infrastructure, IoT telemetry, and fleet communications.',
+        examples: ['Retail chains', 'Corporate enterprises', 'Financial institutions'],
+      },
+    ],
+    vitals: {
+      createdYear: '1993',
+      employeeCount: '~60,000+ employees',
+      headquarters: 'Moscow, Russia',
+      paidClients: 'Over 80 million active mobile subscribers and digital ecosystem users',
+    },
+    monetization: {
+      summary: 'MTS Group monetizes via monthly mobile and broadband subscription fees, financial services interchange and loan interest, streaming content subscriptions, and enterprise cloud contracts.',
+      modelType: 'Recurring Telecom Subscriptions, Fintech Fees, and Enterprise Cloud Contracts',
+      revenueStreams: [
+        'Monthly mobile voice and broadband cellular subscription tiers',
+        'Digital banking interest, merchant card fees, and financial transactions',
+        'Multimedia streaming subscriptions and digital content licensing',
+        'Enterprise IT, IoT connectivity, and managed cloud infrastructure contracts',
+      ],
+      pricingStructure: 'Tiered consumer mobile plans with add-on digital services alongside custom enterprise technology pricing.',
+    },
+    marketIntel: {
+      marketShare: '~30% Russian Mobile Telecom and Digital Ecosystem Market Leader',
+      marketPosition: 'Leading Mobile Operator and Growing Digital Ecosystem Player',
+      competitors: [
+        {
+          name: 'MegaFon',
+          marketShare: '~27% Market Share',
+          focusDifference: 'Major federal telecommunications provider focusing on high-speed mobile network coverage and digital corporate services.',
+        },
+        {
+          name: 'Beeline (VEON / PJSC VimpelCom)',
+          marketShare: '~22% Market Share',
+          focusDifference: 'National telecom operator offering mobile packages, fixed broadband, and enterprise digital solutions.',
+        },
+        {
+          name: 'T2 (formerly Tele2 Russia)',
+          marketShare: '~19% Market Share',
+          focusDifference: 'Value-oriented mobile operator providing competitive consumer voice and data bundles.',
+        },
+      ],
+      otherMarketShare: {
+        percentage: '~2% Regional Operators',
+        sharePercent: 2,
+        description: 'Independent regional mobile networks, local municipal fiber providers, and virtual network operators.',
+      },
+    },
+    sources: [
+      { title: 'MTS Group Official Corporate Portal', url: 'https://www.mts.ru' },
+      { title: 'MTS Group Investor Relations and Financial Disclosures', url: 'https://ir.mts.ru' },
+      { title: 'Mobile TeleSystems on Wikipedia (Supporting Citation)', url: 'https://en.wikipedia.org/wiki/Mobile_TeleSystems' },
+    ],
+  },
 };
 
 BENCHMARK_SUMMARIES['siemens.com'] = BENCHMARK_SUMMARIES['siemens'];
@@ -1598,3 +2070,24 @@ BENCHMARK_SUMMARIES['microsoft'] = BENCHMARK_SUMMARIES['microsoft.com'];
 BENCHMARK_SUMMARIES['silvernova'] = BENCHMARK_SUMMARIES['silvernova.ai'];
 BENCHMARK_SUMMARIES['silvernovagmbh'] = BENCHMARK_SUMMARIES['silvernova.ai'];
 BENCHMARK_SUMMARIES['silvernova gmbh'] = BENCHMARK_SUMMARIES['silvernova.ai'];
+BENCHMARK_SUMMARIES['youhodler'] = BENCHMARK_SUMMARIES['youhodler.com'];
+BENCHMARK_SUMMARIES['uthodler'] = BENCHMARK_SUMMARIES['youhodler.com'];
+BENCHMARK_SUMMARIES['https://www.youhodler.com'] = BENCHMARK_SUMMARIES['youhodler.com'];
+BENCHMARK_SUMMARIES['you.com'] = BENCHMARK_SUMMARIES['you.com'];
+BENCHMARK_SUMMARIES['https://you.com'] = BENCHMARK_SUMMARIES['you.com'];
+BENCHMARK_SUMMARIES['https://www.you.com'] = BENCHMARK_SUMMARIES['you.com'];
+BENCHMARK_SUMMARIES['yousearch'] = BENCHMARK_SUMMARIES['you.com'];
+BENCHMARK_SUMMARIES['mts group'] = BENCHMARK_SUMMARIES['mts'];
+BENCHMARK_SUMMARIES['mtsgroup'] = BENCHMARK_SUMMARIES['mts'];
+BENCHMARK_SUMMARIES['mts.ru'] = BENCHMARK_SUMMARIES['mts'];
+BENCHMARK_SUMMARIES['https://www.mts.ru'] = BENCHMARK_SUMMARIES['mts'];
+BENCHMARK_SUMMARIES['https://mts.ru'] = BENCHMARK_SUMMARIES['mts'];
+BENCHMARK_SUMMARIES['mobile telesystems'] = BENCHMARK_SUMMARIES['mts'];
+BENCHMARK_SUMMARIES['mobiletelesystems'] = BENCHMARK_SUMMARIES['mts'];
+BENCHMARK_SUMMARIES['пао мтс'] = BENCHMARK_SUMMARIES['mts'];
+BENCHMARK_SUMMARIES['паомтс'] = BENCHMARK_SUMMARIES['mts'];
+BENCHMARK_SUMMARIES['мтс'] = BENCHMARK_SUMMARIES['mts'];
+BENCHMARK_SUMMARIES['мтс групп'] = BENCHMARK_SUMMARIES['mts'];
+BENCHMARK_SUMMARIES['мтсгрупп'] = BENCHMARK_SUMMARIES['mts'];
+
+
